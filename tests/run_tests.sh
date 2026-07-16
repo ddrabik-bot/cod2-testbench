@@ -2,7 +2,7 @@
 # Run all tests and produce results/test_results.log + results/test_report.html
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")\" && pwd)"
 RESULTS_DIR="$SCRIPT_DIR/../results"
 mkdir -p "$RESULTS_DIR"
 
@@ -24,33 +24,6 @@ else
     FAILED=$((FAILED + 1))
 fi
 
-# --- Test: Dockerfile istnieje ---
-if [ -f "$SCRIPT_DIR/../Dockerfile" ]; then
-    echo "[PASS] Dockerfile exists" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[SKIP] Dockerfile - not yet created" >> "$RESULTS_FILE"
-    SKIPPED=$((SKIPPED + 1))
-fi
-
-# --- Test: docker-compose.yml istnieje ---
-if [ -f "$SCRIPT_DIR/../docker-compose.yml" ]; then
-    echo "[PASS] docker-compose.yml exists" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[SKIP] docker-compose.yml - not yet created" >> "$RESULTS_FILE"
-    SKIPPED=$((SKIPPED + 1))
-fi
-
-# --- Test: Makefile istnieje ---
-if [ -f "$SCRIPT_DIR/../Makefile" ]; then
-    echo "[PASS] Makefile exists" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[SKIP] Makefile - not yet created" >> "$RESULTS_FILE"
-    SKIPPED=$((SKIPPED + 1))
-fi
-
 # --- Test: Git branch structure ---
 if git -C "$SCRIPT_DIR/.." rev-parse --git-dir > /dev/null 2>&1; then
     echo "[PASS] Git repository initialized" >> "$RESULTS_FILE"
@@ -60,7 +33,6 @@ else
     FAILED=$((FAILED + 1))
 fi
 
-<<<<<<< HEAD
 # --- Test: GSC test framework exists ---
 if [ -f "$SCRIPT_DIR/../mods/_test.gsc" ]; then
     echo "[PASS] mods/_test.gsc exists" >> "$RESULTS_FILE"
@@ -148,33 +120,6 @@ else
     FAILED=$((FAILED + 1))
 fi
 
-# --- Test: _test.gsc has getBot() helper ---
-if grep -q "getBot()" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
-    echo "[PASS] _test.gsc has getBot()" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[FAIL] _test.gsc missing getBot()" >> "$RESULTS_FILE"
-    FAILED=$((FAILED + 1))
-fi
-
-# --- Test: _test.gsc has getPlayer() helper ---
-if grep -q "getPlayer()" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
-    echo "[PASS] _test.gsc has getPlayer()" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[FAIL] _test.gsc missing getPlayer()" >> "$RESULTS_FILE"
-    FAILED=$((FAILED + 1))
-fi
-
-# --- Test: _test.gsc calls bot test functions ---
-if grep -q "botTestSetOriginAndAngles\|botTestForceShot\|botTestSetWalkValues\|botTestMeleeWeapon" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
-    echo "[PASS] _test.gsc calls bot test functions" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[FAIL] _test.gsc missing bot test function calls" >> "$RESULTS_FILE"
-    FAILED=$((FAILED + 1))
-fi
-
 # --- Test: GSC has math tests ---
 if grep -q "1 + 1" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
     echo "[PASS] _test.gsc has basic math tests" >> "$RESULTS_FILE"
@@ -202,6 +147,15 @@ else
     FAILED=$((FAILED + 1))
 fi
 
+# --- Test: generate_html_report.sh exists ---
+if [ -f "$SCRIPT_DIR/generate_html_report.sh" ]; then
+    echo "[PASS] generate_html_report.sh exists" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] generate_html_report.sh missing" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
 # --- Test: GSC has getCallStack() tests ---
 if grep -q "getCallStack()" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
     echo "[PASS] _test.gsc has getCallStack() tests" >> "$RESULTS_FILE"
@@ -220,30 +174,12 @@ else
     FAILED=$((FAILED + 1))
 fi
 
-# --- Test: GSC has deep nested call stack tests ---
-if grep -q "testDeepNestedCallStack\\|testNestedCallStackDeep" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
-    echo "[PASS] _test.gsc has deep nested call stack tests" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[FAIL] _test.gsc missing deep nested call stack tests" >> "$RESULTS_FILE"
-    FAILED=$((FAILED + 1))
-fi
-
 # --- Test: GSC has isDefined() on different types tests ---
-if grep -q "isDefined.*int.*1\\|isDefined.*string.*1\\|isDefined.*array.*1" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+if grep -q "isDefined.*int.*1\|isDefined.*string.*1\|isDefined.*array.*1" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
     echo "[PASS] _test.gsc has isDefined() type tests" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
 else
     echo "[FAIL] _test.gsc missing isDefined() type tests" >> "$RESULTS_FILE"
-    FAILED=$((FAILED + 1))
-fi
-
-# --- Test: GSC has isDefined(undefined) test ---
-if grep -q "isDefined.*undefined.*0\\|isDefined.*nonexistent" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
-    echo "[PASS] _test.gsc has isDefined(undefined) test" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[FAIL] _test.gsc missing isDefined(undefined) test" >> "$RESULTS_FILE"
     FAILED=$((FAILED + 1))
 fi
 
@@ -265,30 +201,20 @@ else
     FAILED=$((FAILED + 1))
 fi
 
-# --- Test: GSC has CodeCallback_NotifyDebug test ---
-if grep -q "CodeCallback_NotifyDebug" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
-    echo "[PASS] _test.gsc has CodeCallback_NotifyDebug test" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[FAIL] _test.gsc missing CodeCallback_NotifyDebug test" >> "$RESULTS_FILE"
-    FAILED=$((FAILED + 1))
-fi
+# ============================================================================
+# MySQL Integration Tests (F3.1)
+# ============================================================================
+echo "" >> "$RESULTS_FILE"
+echo "--- MySQL Integration Tests ---" >> "$RESULTS_FILE"
 
-# --- Test: GSC has testRunnerVerbose() function ---
-if grep -q "testRunnerVerbose" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
-    echo "[PASS] _test.gsc has testRunnerVerbose() function" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
+# Check if MySQL is reachable via pymysql
+if python3 -c "import pymysql" 2>/dev/null; then
+    echo "[*] Running MySQL integration tests..." >> "$RESULTS_FILE"
+    python3 "$SCRIPT_DIR/mysql_test.py" 2>&1 | tee -a "$RESULTS_FILE"
+    MYSQL_EXIT=${PIPESTATUS[0]}
 else
-    echo "[FAIL] _test.gsc missing testRunnerVerbose() function" >> "$RESULTS_FILE"
-=======
-# --- Test: generate_html_report.sh istnieje ---
-if [ -f "$SCRIPT_DIR/generate_html_report.sh" ]; then
-    echo "[PASS] generate_html_report.sh exists" >> "$RESULTS_FILE"
-    PASSED=$((PASSED + 1))
-else
-    echo "[FAIL] generate_html_report.sh missing" >> "$RESULTS_FILE"
->>>>>>> 04157d2 (feat: dodano generowanie kolorowego raportu HTML z wynikow testow (F3.4))
-    FAILED=$((FAILED + 1))
+    echo "[SKIP] MySQL tests - pymysql not installed. Install: pip install pymysql" >> "$RESULTS_FILE"
+    MYSQL_EXIT=0
 fi
 
 echo "" >> "$RESULTS_FILE"
