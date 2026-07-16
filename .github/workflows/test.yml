@@ -20,7 +20,7 @@ jobs:
       run: |
         sudo dpkg --add-architecture i386
         sudo apt-get update -qq
-        sudo apt-get install -y -qq libc6:i386 libstdc++5:i386 zlib1g:i386 netcat-openbsd procps
+        sudo apt-get install -y -qq libc6:i386 libstdc++5:i386 zlib1g:i386 libmysqlclient21:i386 netcat-openbsd procps
         echo "=== Dependencies installed ==="
 
     - name: Download CoD2 server binaries

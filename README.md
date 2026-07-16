@@ -36,7 +36,7 @@ LD_PRELOAD=./libcod2.so ./cod2_lnxded +set sv_maxclients 16 +set sv_rcon_passwor
 
 ## Zależności
 
-- `libc6:i386`, `libstdc++5:i386`, `zlib1g:i386` (32-bit libs dla CoD2)
+- `libc6:i386`, `libstdc++5:i386`, `zlib1g:i386`, `libmysqlclient21:i386` (32-bit libs dla CoD2)
 - `curl` (do pobierania binarow)
 
 ## Źródła
