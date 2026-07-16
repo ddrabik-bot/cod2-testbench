@@ -1,0 +1,28 @@
+Test Results - 2026-07-16 15:55:18 UTC
+==================================================
+
+[PASS] Project README.md exists
+[SKIP] Dockerfile - not yet created
+[SKIP] docker-compose.yml - not yet created
+[SKIP] Makefile - not yet created
+[PASS] Git repository initialized
+[PASS] mods/_test.gsc exists
+[PASS] mods/test.cfg exists
+[PASS] _test.gsc contains testRunner()
+[PASS] _test.gsc contains assertEQ()
+[PASS] _test.gsc uses writeFile() for results
+[PASS] _test.gsc has basic math tests
+[PASS] _test.gsc has string concatenation tests
+[PASS] _test.gsc has level.players tests
+[PASS] _test.gsc has getCallStack() tests
+[PASS] _test.gsc has nested call stack tests
+[PASS] _test.gsc has deep nested call stack tests
+[PASS] _test.gsc has isDefined() type tests
+[PASS] _test.gsc has isDefined(undefined) test
+[PASS] _test.gsc has logPrintConsole test
+[PASS] _test.gsc has printf/println/iprintln tests
+[PASS] _test.gsc has CodeCallback_NotifyDebug test
+[PASS] _test.gsc has testRunnerVerbose() function
+
+==================================================
+Summary: 19 passed, 0 failed, 3 skipped

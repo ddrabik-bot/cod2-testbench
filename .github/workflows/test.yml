@@ -1,14 +1,132 @@
-name: CoD2 Server CI Test
+name: Test Suite
 
 on:
   push:
-    branches: [ master, dev, feat/** ]
+    branches: [ master, dev ]
   pull_request:
     branches: [ master ]
-  workflow_dispatch:
+
+env:
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
 jobs:
-  test-server:
+  test:
+    runs-on: ubuntu-latest
+
+    # MySQL service container for database integration tests
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpass
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -ptestpass"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymysql
+
+      - name: Run tests
+        run: chmod +x tests/run_tests.sh && ./tests/run_tests.sh
+
+      - name: Show test results (plain text)
+        run: cat results/test_results.log
+
+      - name: Generate HTML report (if not already done)
+        run: |
+          if [ -f tests/generate_html_report.sh ]; then
+            chmod +x tests/generate_html_report.sh
+            bash tests/generate_html_report.sh results/test_results.log
+          fi
+
+      - name: Upload test results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: results/
+          if-no-files-found: error
+
+      - name: Show HTML report URL hint
+        run: |
+          echo "HTML report available in 'test-results' artifact as test_report.html"
+
+      - name: Notify Discord — Success
+        if: success()
+        run: |
+          chmod +x scripts/notify-discord.sh
+          SUMMARY=$(tail -1 results/test_results.log | head -c 200)
+          ./scripts/notify-discord.sh "success" "Tests Passed" "$SUMMARY"
+
+      - name: Notify Discord — Failure
+        if: failure()
+        run: |
+          chmod +x scripts/notify-discord.sh
+          ./scripts/notify-discord.sh "failure" "Tests Failed" "One or more tests failed. Check the run details."
+
+      - name: Notify Discord — Cancelled/Skipped
+        if: cancelled()
+        run: |
+          chmod +x scripts/notify-discord.sh
+          ./scripts/notify-discord.sh "skipped" "Tests Cancelled" "The test run was cancelled."
+
+  # F1.2 — Build zk_libcod (libcod2.so)
+  build-zk-libcod:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout zk_libcod
+        uses: actions/checkout@v4
+        with:
+          repository: ibuddieat/zk_libcod
+          ref: dev
+          path: code
+
+      - name: Install Dependencies (32-bit)
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib libstdc++5:i386
+
+      - name: Build libcod2.so (nomysql, nospeex)
+        run: cd code && ./doit.sh nomysql nospeex
+
+      - name: Verify libcod2.so exists
+        run: |
+          if [ -f code/bin/libcod2.so ]; then
+            echo "✅ libcod2.so built successfully"
+            file code/bin/libcod2.so
+            ls -lh code/bin/libcod2.so
+          else
+            echo "❌ libcod2.so NOT FOUND"
+            exit 1
+          fi
+
+      - name: Upload libcod2.so artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcod2-ubuntu-nomysql-nospeex
+          path: code/bin/libcod2.so
+          if-no-files-found: error
+
+  # F1.3 — Uruchomienie serwera CoD2 w CI (LD_PRELOAD)
+  start-server:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -43,7 +161,6 @@ jobs:
         echo "main/ znaleziony: $(ls main/*.iwd 2>/dev/null | wc -l) plik(i) .iwd"
 
         # Uruchom serwer w tle z LD_PRELOAD
-        # fs_basepath = . (obecny katalog) - serwer szuka main/ i mods/ wzgledem niego
         LD_PRELOAD=./libcod2.so ./cod2_lnxded \
           +set sv_maxclients 16 \
           +set sv_rcon_password test123 \

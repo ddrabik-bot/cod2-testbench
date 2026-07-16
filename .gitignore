@@ -7,3 +7,7 @@ show_contents.py
 *.tar.gz
 /tmp/
 /tmp/*
+results/test_results.log
+results/test_results.html
+results/test_report.html
+*.bak
