@@ -2,7 +2,7 @@
 # Run all tests and produce results/test_results.log + results/test_report.html
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")\" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RESULTS_DIR="$SCRIPT_DIR/../results"
 mkdir -p "$RESULTS_DIR"
 
@@ -215,6 +215,11 @@ if python3 -c "import pymysql" 2>/dev/null; then
 else
     echo "[SKIP] MySQL tests - pymysql not installed. Install: pip install pymysql" >> "$RESULTS_FILE"
     MYSQL_EXIT=0
+fi
+
+# Propagate MySQL test failures to the overall count
+if [ "$MYSQL_EXIT" -ne 0 ]; then
+    FAILED=$((FAILED + MYSQL_EXIT))
 fi
 
 echo "" >> "$RESULTS_FILE"
