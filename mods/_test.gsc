@@ -52,6 +52,49 @@ testRunner()
 
     logPrintConsole("^4Aktualna liczba graczy: " + level.playerCount + "^7\n");
 
+    // ---- F3.3: Failure Mode Tests ----
+    logPrintConsole("^3--- F3.3: Failure Mode Tests ---^7\n");
+
+    // Test: undefined variable access (LD_PRELOAD crash analog)
+    logPrintConsole("^3--- Test 4: Undefined variable (crash test) ---^7\n");
+    level.undefVar = undefined;
+    assertEQ(isDefined(level.undefVar), 0, "Undefined variable isDefined == 0");
+
+    // Test: division by zero
+    logPrintConsole("^3--- Test 5: Division by zero ---^7\n");
+    level.divResult = 10 / 0;
+    assertEQ(isDefined(level.divResult), 1, "Division by zero nie crashuje (GSC safe)");
+
+    // Test: empty string operations
+    logPrintConsole("^3--- Test 6: Empty string operations ---^7\n");
+    level.emptyStr = "";
+    level.emptyConcat = level.emptyStr + level.emptyStr;
+    assertEQ(level.emptyConcat, "", "Pusty string + pusty string == pusty string");
+    assertEQ(level.emptyStr, "", "Pusty string == \"\"");
+    assertEQ(strlen(level.emptyStr), 0, "strlen(pusty string) == 0");
+
+    // Test: out of bounds array access
+    logPrintConsole("^3--- Test 7: Array boundary test ---^7\n");
+    level.testArray = [];
+    level.testArray[0] = "first";
+    level.testArray[1] = "second";
+    level.outOfBounds = level.testArray[999];
+    assertEQ(isDefined(level.outOfBounds), 0, "Array[999] (out of bounds) == undefined");
+
+    // Test: invalid data handling
+    logPrintConsole("^3--- Test 8: Invalid data handling ---^7\n");
+    level.invalidNum = "abc" + 123;
+    assertEQ(isDefined(level.invalidNum), 1, "String + number nie crashuje");
+    level.mixedType = 1 + "test";
+    assertEQ(isDefined(level.mixedType), 1, "Number + string nie crashuje");
+
+    // Test: cykliczna zależność zmiennych
+    logPrintConsole("^3--- Test 9: Self-reference ---^7\n");
+    level.selfRef = level.selfRef;
+    assertEQ(isDefined(level.selfRef), 0, "Self-referencja undefined (jeszcze nie zdefiniowana)");
+
+    // ---- Koniec F3.3 ----
+
     // Sprawdzenie czy kazdy element tablicy to entity
     if (level.playerCount > 0)
     {
