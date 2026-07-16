@@ -2,7 +2,7 @@ name: Test Suite
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ master, dev, feat/** ]
   pull_request:
     branches: [ master ]
 
@@ -160,13 +160,14 @@ jobs:
         fi
         echo "main/ znaleziony: $(ls main/*.iwd 2>/dev/null | wc -l) plik(i) .iwd"
 
-        # Uruchom serwer w tle z LD_PRELOAD
+        # Uruchom serwer w tle z LD_PRELOAD, logi do /tmp/cod2_server.log
         LD_PRELOAD=./libcod2.so ./cod2_lnxded \
           +set sv_maxclients 16 \
           +set sv_rcon_password test123 \
           +set fs_game mods \
           +set fs_basepath . \
-          +exec ../../test.cfg &
+          +exec ../../test.cfg \
+          > /tmp/cod2_server.log 2>&1 &
         SERVER_PID=$!
         echo "Server PID: $SERVER_PID"
 
@@ -194,9 +195,12 @@ jobs:
           ps -p "$SERVER_PID" -o pid,ppid,stat,etime,args --no-headers 2>/dev/null || echo "Proces zakonczyl sie"
         else
           echo "BLAD: Serwer CoD2 nie dziala - crash lub nie wystartowal"
-          # Sprawdz logi
-          echo "=== Logi serwera ==="
-          dmesg 2>/dev/null | tail -20 || true
+          echo "=== Log serwera (/tmp/cod2_server.log) ==="
+          if [ -f /tmp/cod2_server.log ]; then
+            cat /tmp/cod2_server.log
+          else
+            echo "Brak pliku z logiem"
+          fi
           exit 1
         fi
 
@@ -205,6 +209,12 @@ jobs:
       run: |
         echo "=== Logi procesu ==="
         ps aux | grep cod2 || echo "Brak procesu cod2"
+        echo "=== Log serwera (ostatnie 50 linii) ==="
+        if [ -f /tmp/cod2_server.log ]; then
+          tail -50 /tmp/cod2_server.log
+        else
+          echo "Brak pliku z logiem"
+        fi
         echo "=== Uzycie pamieci ==="
         free -m || true
 
