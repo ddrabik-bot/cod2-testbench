@@ -1,0 +1,105 @@
+name: CoD2 Server CI Test
+
+on:
+  push:
+    branches: [ master, dev, feat/** ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  test-server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Setup dependencies (32-bit libs dla CoD2)
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq libc6:i386 libstdc++5:i386 zlib1g:i386 libmysqlclient21:i386 netcat-openbsd procps
+        echo "=== Dependencies installed ==="
+
+    - name: Download CoD2 server binaries
+      run: |
+        bash scripts/setup.sh
+        echo "=== Binaries ready ==="
+        ls -la code/bin/
+
+    - name: Uruchom serwer CoD2 z libcod2
+      run: |
+        cd code/bin
+        chmod +x cod2_lnxded libcod2.so
+
+        # Sprawdz czy main/ istnieje (wymagane do map)
+        if [ ! -d main ]; then
+          echo "BLAD: Brak katalogu main/ z plikami .iwd"
+          echo "Serwer CoD2 wymaga main/ do uruchomienia map"
+          exit 1
+        fi
+        echo "main/ znaleziony: $(ls main/*.iwd 2>/dev/null | wc -l) plik(i) .iwd"
+
+        # Uruchom serwer w tle z LD_PRELOAD
+        # fs_basepath = . (obecny katalog) - serwer szuka main/ i mods/ wzgledem niego
+        LD_PRELOAD=./libcod2.so ./cod2_lnxded \
+          +set sv_maxclients 16 \
+          +set sv_rcon_password test123 \
+          +set fs_game mods \
+          +set fs_basepath . \
+          +exec ../../test.cfg &
+        SERVER_PID=$!
+        echo "Server PID: $SERVER_PID"
+
+        # Zapisz PID do pliku
+        echo $SERVER_PID > /tmp/cod2_pid
+
+    - name: Czekaj na rozruch serwera
+      run: |
+        echo "Czekam 5 sekund na rozruch serwera..."
+        sleep 5
+
+    - name: Weryfikuj - serwer nie crashuje
+      run: |
+        SERVER_PID=$(cat /tmp/cod2_pid 2>/dev/null || echo "")
+
+        if [ -z "$SERVER_PID" ]; then
+          echo "BLAD: Brak PID serwera"
+          exit 1
+        fi
+
+        # Sprawdz czy proces nadal zyje
+        if kill -0 "$SERVER_PID" 2>/dev/null; then
+          echo "SUKCES: Serwer CoD2 dziala (PID: $SERVER_PID)"
+          echo "=== Statystyki procesu ==="
+          ps -p "$SERVER_PID" -o pid,ppid,stat,etime,args --no-headers 2>/dev/null || echo "Proces zakonczyl sie"
+        else
+          echo "BLAD: Serwer CoD2 nie dziala - crash lub nie wystartowal"
+          # Sprawdz logi
+          echo "=== Logi serwera ==="
+          dmesg 2>/dev/null | tail -20 || true
+          exit 1
+        fi
+
+    - name: Wyswietl logi serwera
+      if: always()
+      run: |
+        echo "=== Logi procesu ==="
+        ps aux | grep cod2 || echo "Brak procesu cod2"
+        echo "=== Uzycie pamieci ==="
+        free -m || true
+
+    - name: Zatrzymaj serwer
+      if: always()
+      run: |
+        SERVER_PID=$(cat /tmp/cod2_pid 2>/dev/null || echo "")
+        if [ -n "$SERVER_PID" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
+          echo "Zatrzymywanie serwera (PID: $SERVER_PID)..."
+          kill "$SERVER_PID" 2>/dev/null || true
+          wait "$SERVER_PID" 2>/dev/null || true
+          echo "Serwer zatrzymany"
+        else
+          echo "Serwer juz nie dziala (lub nie wystartowal)"
+        fi
