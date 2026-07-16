@@ -11,6 +11,8 @@ cod2-testbench/
 │   └── test.cfg     — Konfiguracja uruchomieniowa testów
 ├── results/
 │   └── .gitkeep     — Katalog wyników testów
+├── scripts/
+│   └── notify-discord.sh — Wysyłka raportów testów na Discorda
 └── README.md
 ```
 
@@ -46,3 +48,44 @@ Sprawdza czy `actual == expected`. W przypadku:
 
 - Konsola: kolorowe logi z `^2` (PASS), `^1` (FAIL), `^3` (sekcje)
 - Plik: `results/test_results.log` — podsumowanie + szczegóły
+
+## Discord Webhook
+
+Po każdym uruchomieniu GitHub Actions test suite wysyła powiadomienie na
+Discorda z podsumowaniem wyników.
+
+### Konfiguracja
+
+1. Utwórz webhook na serwerze Discord:
+   - Ustawienia kanału → Integracje → Webhooki → Nowy webhook
+   - Skopiuj URL webhooka
+
+2. Dodaj secret do repozytorium:
+
+   **Przez GitHub UI:**
+   - Settings → Secrets and variables → Actions → New repository secret
+   - Name: `DISCORD_WEBHOOK_URL`
+   - Value: URL webhooka z Discorda
+
+   **Przez API:**
+   ```bash
+   python3 scripts/set_discord_secret.py 'https://discord.com/api/webhooks/...'
+   ```
+
+### Format powiadomień
+
+| Status    | Kolor  | Emoji |
+|-----------|--------|-------|
+| Success   | 🟢     | ✅    |
+| Failure   | 🔴     | ❌    |
+| Cancelled | 🟡     | ⚠️    |
+
+Powiadomienie zawiera: nazwę repozytorium, branch, commit (skrócony),
+autora, link do runa, datę i podsumowanie z `results/test_results.log`.
+
+### Użycie skryptu lokalnie
+
+```bash
+DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..." \
+  ./scripts/notify-discord.sh success "Testy lokalne" "Wszystkie testy przeszły"
+```
