@@ -1,0 +1,3 @@
+Test results output directory.
+This file is a placeholder to track the directory in git.
+After testRunner() execution, results will be written here.
