@@ -20,8 +20,15 @@ jobs:
       - name: Run tests
         run: chmod +x tests/run_tests.sh && ./tests/run_tests.sh
 
-      - name: Show test results
+      - name: Show test results (plain text)
         run: cat results/test_results.log
+
+      - name: Generate HTML report (if not already done)
+        run: |
+          if [ -f tests/generate_html_report.sh ]; then
+            chmod +x tests/generate_html_report.sh
+            bash tests/generate_html_report.sh results/test_results.log
+          fi
 
       - name: Upload test results artifact
         uses: actions/upload-artifact@v4
@@ -29,6 +36,10 @@ jobs:
           name: test-results
           path: results/
           if-no-files-found: error
+
+      - name: Show HTML report URL hint
+        run: |
+          echo "HTML report available in 'test-results' artifact as test_report.html"
 
       - name: Notify Discord — Success
         if: success()
@@ -48,3 +59,41 @@ jobs:
         run: |
           chmod +x scripts/notify-discord.sh
           ./scripts/notify-discord.sh "skipped" "Tests Cancelled" "The test run was cancelled."
+
+  # F1.2 — Build zk_libcod (libcod2.so)
+  build-zk-libcod:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout zk_libcod
+        uses: actions/checkout@v4
+        with:
+          repository: ibuddieat/zk_libcod
+          ref: dev
+          path: code
+
+      - name: Install Dependencies (32-bit)
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib libstdc++5:i386
+
+      - name: Build libcod2.so (nomysql, nospeex)
+        run: cd code && ./doit.sh nomysql nospeex
+
+      - name: Verify libcod2.so exists
+        run: |
+          if [ -f code/bin/libcod2.so ]; then
+            echo "✅ libcod2.so built successfully"
+            file code/bin/libcod2.so
+            ls -lh code/bin/libcod2.so
+          else
+            echo "❌ libcod2.so NOT FOUND"
+            exit 1
+          fi
+
+      - name: Upload libcod2.so artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcod2-ubuntu-nomysql-nospeex
+          path: code/bin/libcod2.so
+          if-no-files-found: error
