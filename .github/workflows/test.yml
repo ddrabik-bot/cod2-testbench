@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -26,3 +29,22 @@ jobs:
           name: test-results
           path: results/
           if-no-files-found: error
+
+      - name: Notify Discord — Success
+        if: success()
+        run: |
+          chmod +x scripts/notify-discord.sh
+          SUMMARY=$(tail -1 results/test_results.log | head -c 200)
+          ./scripts/notify-discord.sh "success" "Tests Passed" "$SUMMARY"
+
+      - name: Notify Discord — Failure
+        if: failure()
+        run: |
+          chmod +x scripts/notify-discord.sh
+          ./scripts/notify-discord.sh "failure" "Tests Failed" "One or more tests failed. Check the run details."
+
+      - name: Notify Discord — Cancelled/Skipped
+        if: cancelled()
+        run: |
+          chmod +x scripts/notify-discord.sh
+          ./scripts/notify-discord.sh "skipped" "Tests Cancelled" "The test run was cancelled."
