@@ -34,12 +34,22 @@ jobs:
         cd code/bin
         chmod +x cod2_lnxded libcod2.so
 
+        # Sprawdz czy main/ istnieje (wymagane do map)
+        if [ ! -d main ]; then
+          echo "BLAD: Brak katalogu main/ z plikami .iwd"
+          echo "Serwer CoD2 wymaga main/ do uruchomienia map"
+          exit 1
+        fi
+        echo "main/ znaleziony: $(ls main/*.iwd 2>/dev/null | wc -l) plik(i) .iwd"
+
         # Uruchom serwer w tle z LD_PRELOAD
+        # fs_basepath = . (obecny katalog) - serwer szuka main/ i mods/ wzgledem niego
         LD_PRELOAD=./libcod2.so ./cod2_lnxded \
           +set sv_maxclients 16 \
           +set sv_rcon_password test123 \
           +set fs_game mods \
-          +exec ../../../test.cfg &
+          +set fs_basepath . \
+          +exec ../../test.cfg &
         SERVER_PID=$!
         echo "Server PID: $SERVER_PID"
 
