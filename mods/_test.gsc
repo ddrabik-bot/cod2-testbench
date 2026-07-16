@@ -4,9 +4,10 @@
 // Zapewnia:
 //   - testRunner()   — uruchamia wszystkie testy i generuje raport
 //   - assertEQ()     — sprawdza czy actual == expected
+//   - generateHtmlReport() — generuje HTML raport z wyników
 //
 // Uruchomienie: exec test.cfg w konsoli serwera
-// Raport:        logPrintConsole + results/test_results.log
+// Raport:        logPrintConsole + results/test_results.log + results/test_report.html
 // ============================================================================
 
 // ---------------------------------------------------------------------------
@@ -17,9 +18,10 @@ testRunner()
     level.testPassed = 0;
     level.testFailed = 0;
     level.testResults = "";
+    level.testDetails = "";
 
     logPrintConsole("^2========================================^7\n");
-    logPrintConsole("^2  Test Runner v1.0 — uruchomiono       ^7\n");
+    logPrintConsole("^2  Test Runner v1.1 — uruchomiono       ^7\n");
     logPrintConsole("^2========================================^7\n");
 
     // ---- Test 1: Basic math ----
@@ -240,7 +242,7 @@ testRunner()
 
     logPrintConsole("^2========================================^7\n");
 
-    // ---- Zapis do pliku ----
+    // ---- Zapis do pliku (plain text) ----
     level.resultText = "=== Test Results ===\n";
     level.resultText = level.resultText + "Total:  " + level.totalTests + "\n";
     level.resultText = level.resultText + "Passed: " + level.testPassed + "\n";
@@ -264,7 +266,105 @@ testRunner()
     }
 
     writeFile("results/test_results.log", level.resultText);
-    logPrintConsole("^4Raport zapisany do results/test_results.log^7\n");
+    logPrintConsole("^4Raport TXT zapisany do results/test_results.log^7\n");
+
+    // ---- Zapis do pliku (HTML) ----
+    generateHtmlReport();
+
+    logPrintConsole("^4Raport HTML zapisany do results/test_report.html^7\n");
+}
+
+// ---------------------------------------------------------------------------
+// generateHtmlReport() — generuje kolorowy raport HTML z wyników testów
+// ---------------------------------------------------------------------------
+generateHtmlReport()
+{
+    level.htmlContent = "";
+    level.htmlContent = level.htmlContent + "<!DOCTYPE html>\n";
+    level.htmlContent = level.htmlContent + "<html lang=\"pl\">\n";
+    level.htmlContent = level.htmlContent + "<head>\n";
+    level.htmlContent = level.htmlContent + "<meta charset=\"UTF-8\">\n";
+    level.htmlContent = level.htmlContent + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
+    level.htmlContent = level.htmlContent + "<title>Raport Testow - CoD2 Testbench</title>\n";
+    level.htmlContent = level.htmlContent + "<style>\n";
+    level.htmlContent = level.htmlContent + "  body { font-family: 'Segoe UI', Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; margin: 0; padding: 20px; }\n";
+    level.htmlContent = level.htmlContent + "  .container { max-width: 800px; margin: 0 auto; background: #16213e; border-radius: 12px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }\n";
+    level.htmlContent = level.htmlContent + "  h1 { color: #0f3460; border-bottom: 3px solid #e94560; padding-bottom: 10px; font-size: 24px; }\n";
+    level.htmlContent = level.htmlContent + "  .summary { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }\n";
+    level.htmlContent = level.htmlContent + "  .summary-card { flex: 1; min-width: 120px; padding: 16px; border-radius: 8px; text-align: center; font-size: 18px; font-weight: bold; }\n";
+    level.htmlContent = level.htmlContent + "  .card-pass { background: #1b4332; border: 2px solid #2d6a4f; color: #95d5b2; }\n";
+    level.htmlContent = level.htmlContent + "  .card-fail { background: #4a0e0e; border: 2px solid #e94560; color: #ff6b6b; }\n";
+    level.htmlContent = level.htmlContent + "  .card-total { background: #1a1a2e; border: 2px solid #0f3460; color: #a8d8ea; }\n";
+    level.htmlContent = level.htmlContent + "  .card-result { background: #0f3460; border: 2px solid #e94560; color: #e0e0e0; }\n";
+    level.htmlContent = level.htmlContent + "  .card-result.pass { background: #1b4332; border-color: #2d6a4f; color: #95d5b2; }\n";
+    level.htmlContent = level.htmlContent + "  .card-result.fail { background: #4a0e0e; border-color: #e94560; color: #ff6b6b; }\n";
+    level.htmlContent = level.htmlContent + "  .card-count { font-size: 36px; display: block; margin-top: 4px; }\n";
+    level.htmlContent = level.htmlContent + "  table { width: 100%; border-collapse: collapse; margin-top: 16px; }\n";
+    level.htmlContent = level.htmlContent + "  th { background: #0f3460; color: #a8d8ea; padding: 10px 12px; text-align: left; font-weight: 600; }\n";
+    level.htmlContent = level.htmlContent + "  td { padding: 10px 12px; border-bottom: 1px solid #1a1a2e; font-size: 14px; }\n";
+    level.htmlContent = level.htmlContent + "  tr:hover { background: #1a1a4e; }\n";
+    level.htmlContent = level.htmlContent + "  .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; text-transform: uppercase; }\n";
+    level.htmlContent = level.htmlContent + "  .badge-pass { background: #2d6a4f; color: #d8f3dc; }\n";
+    level.htmlContent = level.htmlContent + "  .badge-fail { background: #e94560; color: #fff; }\n";
+    level.htmlContent = level.htmlContent + "  .timestamp { color: #6c757d; font-size: 13px; margin-top: 8px; }\n";
+    level.htmlContent = level.htmlContent + "  .footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #1a1a2e; font-size: 12px; color: #6c757d; text-align: center; }\n";
+    level.htmlContent = level.htmlContent + "</style>\n";
+    level.htmlContent = level.htmlContent + "</head>\n";
+    level.htmlContent = level.htmlContent + "<body>\n";
+    level.htmlContent = level.htmlContent + "<div class=\"container\">\n";
+    level.htmlContent = level.htmlContent + "  <h1>Raport Testow - CoD2 Testbench</h1>\n";
+
+    // Data i czas (uptime serwera)
+    level.htmlContent = level.htmlContent + "  <div class=\"timestamp\">";
+    level.htmlContent = level.htmlContent + "Data: " + getTime() + " ms (uptime serwera)";
+    level.htmlContent = level.htmlContent + "</div>\n";
+
+    // Podsumowanie - karty statystyk
+    level.htmlContent = level.htmlContent + "  <div class=\"summary\">\n";
+    level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-total\">";
+    level.htmlContent = level.htmlContent + "      Razem<span class=\"card-count\">" + level.totalTests + "</span>";
+    level.htmlContent = level.htmlContent + "    </div>\n";
+    level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-pass\">";
+    level.htmlContent = level.htmlContent + "      PASSED<span class=\"card-count\">" + level.testPassed + "</span>";
+    level.htmlContent = level.htmlContent + "    </div>\n";
+    level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-fail\">";
+    level.htmlContent = level.htmlContent + "      FAILED<span class=\"card-count\">" + level.testFailed + "</span>";
+    level.htmlContent = level.htmlContent + "    </div>\n";
+
+    if (level.testFailed > 0)
+    {
+        level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-result fail\">";
+        level.htmlContent = level.htmlContent + "      WYNIK<span class=\"card-count\">FAIL</span>";
+        level.htmlContent = level.htmlContent + "    </div>\n";
+    }
+    else
+    {
+        level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-result pass\">";
+        level.htmlContent = level.htmlContent + "      WYNIK<span class=\"card-count\">PASS</span>";
+        level.htmlContent = level.htmlContent + "    </div>\n";
+    }
+
+    level.htmlContent = level.htmlContent + "  </div>\n";
+
+    // Tabela szczegolow
+    level.htmlContent = level.htmlContent + "  <h2>Szczegoly testow</h2>\n";
+    level.htmlContent = level.htmlContent + "  <table>\n";
+    level.htmlContent = level.htmlContent + "    <thead>\n";
+    level.htmlContent = level.htmlContent + "      <tr><th>Status</th><th>Test</th></tr>\n";
+    level.htmlContent = level.htmlContent + "    </thead>\n";
+    level.htmlContent = level.htmlContent + "    <tbody>\n";
+    level.htmlContent = level.htmlContent + level.testDetails;
+    level.htmlContent = level.htmlContent + "    </tbody>\n";
+    level.htmlContent = level.htmlContent + "  </table>\n";
+
+    level.htmlContent = level.htmlContent + "  <div class=\"footer\">";
+    level.htmlContent = level.htmlContent + "    Wygenerowano przez CoD2 Testbench - _test.gsc v1.1";
+    level.htmlContent = level.htmlContent + "  </div>\n";
+    level.htmlContent = level.htmlContent + "</div>\n";
+    level.htmlContent = level.htmlContent + "</body>\n";
+    level.htmlContent = level.htmlContent + "</html>\n";
+
+    writeFile("results/test_report.html", level.htmlContent);
 }
 
 // ---------------------------------------------------------------------------
@@ -276,12 +376,20 @@ assertEQ(actual, expected, testName)
     {
         level.testPassed++;
         level.testResults = level.testResults + "[PASS] " + testName + "\n";
+        level.testDetails = level.testDetails + "      <tr>\n";
+        level.testDetails = level.testDetails + "        <td><span class=\"badge badge-pass\">PASS</span></td>\n";
+        level.testDetails = level.testDetails + "        <td>" + testName + "</td>\n";
+        level.testDetails = level.testDetails + "      </tr>\n";
         logPrintConsole("^2  [PASS] " + testName + "^7\n");
     }
     else
     {
         level.testFailed++;
         level.testResults = level.testResults + "[FAIL] " + testName + " (expected: " + expected + ", got: " + actual + ")\n";
+        level.testDetails = level.testDetails + "      <tr>\n";
+        level.testDetails = level.testDetails + "        <td><span class=\"badge badge-fail\">FAIL</span></td>\n";
+        level.testDetails = level.testDetails + "        <td>" + testName + " <small>(expected: " + expected + ", got: " + actual + ")</small></td>\n";
+        level.testDetails = level.testDetails + "      </tr>\n";
         logPrintConsole("^1  [FAIL] " + testName + " ^7(expected: ^3" + expected + "^7, got: ^3" + actual + "^7)^7\n");
     }
 }

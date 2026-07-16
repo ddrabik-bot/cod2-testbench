@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run all tests and produce results/test_results.log
+# Run all tests and produce results/test_results.log + results/test_report.html
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -60,6 +60,7 @@ else
     FAILED=$((FAILED + 1))
 fi
 
+<<<<<<< HEAD
 # --- Test: GSC test framework exists ---
 if [ -f "$SCRIPT_DIR/../mods/_test.gsc" ]; then
     echo "[PASS] mods/_test.gsc exists" >> "$RESULTS_FILE"
@@ -210,6 +211,14 @@ if grep -q "testRunnerVerbose" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
     PASSED=$((PASSED + 1))
 else
     echo "[FAIL] _test.gsc missing testRunnerVerbose() function" >> "$RESULTS_FILE"
+=======
+# --- Test: generate_html_report.sh istnieje ---
+if [ -f "$SCRIPT_DIR/generate_html_report.sh" ]; then
+    echo "[PASS] generate_html_report.sh exists" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] generate_html_report.sh missing" >> "$RESULTS_FILE"
+>>>>>>> 04157d2 (feat: dodano generowanie kolorowego raportu HTML z wynikow testow (F3.4))
     FAILED=$((FAILED + 1))
 fi
 
@@ -224,5 +233,10 @@ echo "  Running F3.3 Failure Mode tests..." >> "$RESULTS_FILE"
 echo "==================================================" >> "$RESULTS_FILE"
 
 "$SCRIPT_DIR/failure_mode_tests.sh" >> "$RESULTS_FILE" 2>&1 || true
+
+# --- Generowanie raportu HTML ---
+if [ -f "$SCRIPT_DIR/generate_html_report.sh" ]; then
+    bash "$SCRIPT_DIR/generate_html_report.sh" "$RESULTS_FILE"
+fi
 
 exit $FAILED

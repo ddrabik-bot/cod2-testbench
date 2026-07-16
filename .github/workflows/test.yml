@@ -20,8 +20,15 @@ jobs:
       - name: Run tests
         run: chmod +x tests/run_tests.sh && ./tests/run_tests.sh
 
-      - name: Show test results
+      - name: Show test results (plain text)
         run: cat results/test_results.log
+
+      - name: Generate HTML report (if not already done)
+        run: |
+          if [ -f tests/generate_html_report.sh ]; then
+            chmod +x tests/generate_html_report.sh
+            bash tests/generate_html_report.sh results/test_results.log
+          fi
 
       - name: Upload test results artifact
         uses: actions/upload-artifact@v4
@@ -29,6 +36,10 @@ jobs:
           name: test-results
           path: results/
           if-no-files-found: error
+
+      - name: Show HTML report URL hint
+        run: |
+          echo "HTML report available in 'test-results' artifact as test_report.html"
 
       - name: Notify Discord — Success
         if: success()
