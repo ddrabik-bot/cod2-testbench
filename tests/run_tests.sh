@@ -105,6 +105,75 @@ else
     FAILED=$((FAILED + 1))
 fi
 
+# --- Test: GSC has bot tests (F3.2) ---
+if [ -f "$SCRIPT_DIR/../mods/bot_test_setOriginAndAngles.gsc" ]; then
+    echo "[PASS] mods/bot_test_setOriginAndAngles.gsc exists" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] mods/bot_test_setOriginAndAngles.gsc missing" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+if [ -f "$SCRIPT_DIR/../mods/bot_test_forceShot.gsc" ]; then
+    echo "[PASS] mods/bot_test_forceShot.gsc exists" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] mods/bot_test_forceShot.gsc missing" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+if [ -f "$SCRIPT_DIR/../mods/bot_test_setWalkValues.gsc" ]; then
+    echo "[PASS] mods/bot_test_setWalkValues.gsc exists" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] mods/bot_test_setWalkValues.gsc missing" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+if [ -f "$SCRIPT_DIR/../mods/bot_test_meleeWeapon.gsc" ]; then
+    echo "[PASS] mods/bot_test_meleeWeapon.gsc exists" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] mods/bot_test_meleeWeapon.gsc missing" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC test.cfg loads bot test files ---
+if grep -q "bot_test" "$SCRIPT_DIR/../mods/test.cfg" 2>/dev/null; then
+    echo "[PASS] test.cfg loads bot test files" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] test.cfg missing bot test execs" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: _test.gsc has getBot() helper ---
+if grep -q "getBot()" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has getBot()" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing getBot()" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: _test.gsc has getPlayer() helper ---
+if grep -q "getPlayer()" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has getPlayer()" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing getPlayer()" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: _test.gsc calls bot test functions ---
+if grep -q "botTestSetOriginAndAngles\|botTestForceShot\|botTestSetWalkValues\|botTestMeleeWeapon" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc calls bot test functions" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing bot test function calls" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
 # --- Test: GSC has math tests ---
 if grep -q "1 + 1" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
     echo "[PASS] _test.gsc has basic math tests" >> "$RESULTS_FILE"

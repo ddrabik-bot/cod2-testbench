@@ -4,6 +4,14 @@
 // Zapewnia:
 //   - testRunner()   — uruchamia wszystkie testy i generuje raport
 //   - assertEQ()     — sprawdza czy actual == expected
+//   - getBot()       — zwraca pierwszego bota na serwerze
+//   - getPlayer()    — zwraca pierwszego nie-bota na serwerze
+//
+// Testy botów (F3.2):
+//   - botTestSetOriginAndAngles()  — teleportacja bota
+//   - botTestForceShot()           — wymuszenie strzału
+//   - botTestSetWalkValues()       — ruch bota
+//   - botTestMeleeWeapon()         — atak wręcz
 //
 // Uruchomienie: exec test.cfg w konsoli serwera
 // Raport:        logPrintConsole + results/test_results.log
@@ -93,7 +101,48 @@ testRunner()
     level.selfRef = level.selfRef;
     assertEQ(isDefined(level.selfRef), 0, "Self-referencja undefined (jeszcze nie zdefiniowana)");
 
-    // ---- Koniec F3.3 ----
+    // ---- F3.2: Bot Function Tests ----
+    logPrintConsole("^3--- F3.2: Bot Function Tests ---^7\n");
+
+    // Wczytaj pliki testów botów
+    // (muszą być załadowane przez exec przed wywołaniem testRunner)
+    if (isDefined(botTestSetOriginAndAngles))
+    {
+        botTestSetOriginAndAngles();
+    }
+    else
+    {
+        logPrintConsole("^5  [SKIP] botTestSetOriginAndAngles — plik niezaladowany^7\n");
+    }
+
+    if (isDefined(botTestForceShot))
+    {
+        botTestForceShot();
+    }
+    else
+    {
+        logPrintConsole("^5  [SKIP] botTestForceShot — plik niezaladowany^7\n");
+    }
+
+    if (isDefined(botTestSetWalkValues))
+    {
+        botTestSetWalkValues();
+    }
+    else
+    {
+        logPrintConsole("^5  [SKIP] botTestSetWalkValues — plik niezaladowany^7\n");
+    }
+
+    if (isDefined(botTestMeleeWeapon))
+    {
+        botTestMeleeWeapon();
+    }
+    else
+    {
+        logPrintConsole("^5  [SKIP] botTestMeleeWeapon — plik niezaladowany^7\n");
+    }
+
+    // ---- Koniec F3.2 ----
 
     // Sprawdzenie czy kazdy element tablicy to entity
     if (level.playerCount > 0)
@@ -155,6 +204,36 @@ testRunner()
 
     writeFile("results/test_results.log", level.resultText);
     logPrintConsole("^4Raport zapisany do results/test_results.log^7\n");
+}
+
+// ---------------------------------------------------------------------------
+// getBot() — zwraca pierwszego bota na serwerze lub undefined
+// ---------------------------------------------------------------------------
+getBot()
+{
+    for (i = 0; i < level.players.size; i++)
+    {
+        if (level.players[i] isBot())
+        {
+            return level.players[i];
+        }
+    }
+    return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// getPlayer() — zwraca pierwszego nie-bota na serwerze lub undefined
+// ---------------------------------------------------------------------------
+getPlayer()
+{
+    for (i = 0; i < level.players.size; i++)
+    {
+        if (!level.players[i] isBot())
+        {
+            return level.players[i];
+        }
+    }
+    return undefined;
 }
 
 // ---------------------------------------------------------------------------
