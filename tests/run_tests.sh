@@ -132,6 +132,22 @@ else
     FAILED=$((FAILED + 1))
 fi
 
+# ============================================================================
+# MySQL Integration Tests
+# ============================================================================
+echo "" >> "$RESULTS_FILE"
+echo "--- MySQL Integration Tests ---" >> "$RESULTS_FILE"
+
+# Check if pymysql is available
+if python3 -c "import pymysql" 2>/dev/null; then
+    echo "[*] Running MySQL integration tests..." >> "$RESULTS_FILE"
+    python3 "$SCRIPT_DIR/mysql_test.py" 2>&1 | tee -a "$RESULTS_FILE"
+    MYSQL_EXIT=${PIPESTATUS[0]}
+else
+    echo "[SKIP] MySQL tests - pymysql not installed. Install: pip install pymysql" >> "$RESULTS_FILE"
+    MYSQL_EXIT=0
+fi
+
 echo "" >> "$RESULTS_FILE"
 echo "==================================================" >> "$RESULTS_FILE"
 echo "Summary: $PASSED passed, $FAILED failed, $SKIPPED skipped" >> "$RESULTS_FILE"
