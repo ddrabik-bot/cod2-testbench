@@ -136,4 +136,12 @@ echo "" >> "$RESULTS_FILE"
 echo "==================================================" >> "$RESULTS_FILE"
 echo "Summary: $PASSED passed, $FAILED failed, $SKIPPED skipped" >> "$RESULTS_FILE"
 
+# --- Run failure mode tests (F3.3) ---
+echo "" >> "$RESULTS_FILE"
+echo "==================================================" >> "$RESULTS_FILE"
+echo "  Running F3.3 Failure Mode tests..." >> "$RESULTS_FILE"
+echo "==================================================" >> "$RESULTS_FILE"
+
+"$SCRIPT_DIR/failure_mode_tests.sh" >> "$RESULTS_FILE" 2>&1 || true
+
 exit $FAILED
