@@ -42,7 +42,7 @@ make down
 
 ## Ports
 
-- **8091** — target-server (HTTP test server, port already in use → change in docker-compose.yml)
+- **8091** — target-server (HTTP test server)
 
 ## Tests
 
@@ -146,6 +146,49 @@ Aby uruchomic testy w CoD2 server:
 - Siec Docker: target-server w tej samej sieci co serwer CoD2 (lub przez `--network host`)
 - `execute_async_checkdone()` w petli gry
 
+## Python Test Suite
+
+The file `tests/test_target_server.py` contains 7 automated tests that verify the target-server
+endpoints from within the container (simulating what execute_async_create does with curl):
+
+```bash
+# Run inside target-server container
+docker exec cod2-testbench-target python3 /app/test_target_server.py
+```
+
+### Test Results (all PASS)
+
+```
+============================================================
+execute_async_create — target-server test suite
+============================================================
+
+[TEST 1] execute_async_create — basic curl GET
+  PASS: GET /api/hello (HTTP 200)
+
+[TEST 2] execute_async_create — curl POST z JSON body
+  PASS: POST /api/echo (HTTP 200)
+
+[TEST 3] execute_async_create_nosave — fire-and-forget
+  PASS: POST /api/echo (nosave) (HTTP 200)
+
+[TEST 4] Callback verification — output + param
+  PASS: GET /api/hello with param check (HTTP 200)
+
+[TEST 5] Timeout — curl --max-time 2s na endpoint z 5s opoznieniem
+  PASS: GET /api/delay/5 with timeout=2s — timeout as expected
+
+[TEST 6] Error handling — curl do nieistniejacego endpointu
+  PASS: GET /api/nonexistent (404) (HTTP 404 as expected)
+
+[TEST 7] Error handling — curl do endpointu zwracajacego 500
+  PASS: GET /api/status/500 (HTTP 500 as expected)
+
+============================================================
+RESULTS: 7 passed, 0 failed, 7 total
+============================================================
+```
+
 ## Project Structure
 
 ```
@@ -156,15 +199,19 @@ cod2-testbench/
 ├── target-server/
 │   ├── Dockerfile           # Python 3.13-alpine
 │   └── server.py            # HTTP test server
+├── tests/
+│   ├── execute_async_test.gsc   # GSC test suite dla execute_async_create (F2.3)
+│   └── test_target_server.py    # Python test suite (F2.3)
 ├── mods/
-│   ├── _test.gsc            # Framework testowy z testRunner() + HTML report
-│   └── test.cfg             # Konfiguracja do uruchomienia testow na serwerze CoD2
+│   ├── _test.gsc            # Framework testowy
+│   └── test.cfg             # Konfiguracja testow
 ├── results/
 │   ├── test_results.log     # Wyniki testow (plain text)
-│   └── test_results.html    # Raport HTML z kolorowymi badge'ami PASS/FAIL/SKIP
+│   └── test_results.html    # Raport HTML
 ├── scripts/
-│   └── notify-discord.sh   # Powiadomienia Discord (F3.5)
-└── README.md
+│   └── notify-discord.sh   # Powiadomienia Discord
+└── .github/workflows/
+    └── test.yml             # CI pipeline
 ```
 
 ## Raport HTML (F3.4)
@@ -193,37 +240,12 @@ Konwertuje dowolny plik `test_results.log` na `test_results.html`:
 ./tests/generate_html_report.sh results/test_results.log
 ```
 
-Raport HTML zawiera:
-- **Kolorowe karty statystyk** - Razem, PASSED (zielony), FAILED (czerwony),
-  SKIPPED (zloty), WYNIK
-- **Tabele z badge'ami** - kazdy wpis [PASS]/[FAIL]/[SKIP] jako wiersz tabeli
-- **Data i czas wykonania** - znacznik czasu UTC
-- **Surowe logi** - oryginalny plik w `<pre>` na dole strony
-- **Dark theme** - ciemna paleta #1a1a2e / #16213e / #0f3460 / #e94560
-
 ### CI - GitHub Actions
 
-### `testRunner()`
-Główna funkcja uruchamiająca wszystkie testy. Inicjalizuje liczniki,
-wykonuje zestawy testów, wyświetla podsumowanie i zapisuje raport do pliku.
+W pipeline CI (`test.yml`) raport HTML jest automatycznie generowany i
+dolaczany do artifactu `test-results`.
 
-### `assertEQ(actual, expected, testName)`
-Sprawdza czy `actual == expected`. W przypadku:
-- **PASS** — zwiększa licznik `level.testPassed`, loguje `[PASS]`
-- **FAIL** — zwiększa licznik `level.testFailed`, loguje `[FAIL]` z oczekiwaną
-  i otrzymaną wartością
-
-### Testy
-1. **Basic math** — dodawanie, mnożenie, odejmowanie, dzielenie
-2. **String concatenation** — łączenie stringów, pusty string
-3. **level.players** — sprawdzenie istnienia tablicy graczy, liczby graczy
-
-## Wynik
-
-- Konsola: kolorowe logi z `^2` (PASS), `^1` (FAIL), `^3` (sekcje)
-- Plik: `results/test_results.log` — podsumowanie + szczegóły
-
-## Discord Webhook
+## Discord Webhook (F3.5)
 
 Po każdym uruchomieniu GitHub Actions test suite wysyła powiadomienie na
 Discorda z podsumowaniem wyników.
@@ -235,27 +257,11 @@ Discorda z podsumowaniem wyników.
    - Skopiuj URL webhooka
 
 2. Dodaj secret do repozytorium:
-
+   
    **Przez GitHub UI:**
    - Settings → Secrets and variables → Actions → New repository secret
    - Name: `DISCORD_WEBHOOK_URL`
    - Value: URL webhooka z Discorda
-
-   **Przez API:**
-   ```bash
-   python3 scripts/set_discord_secret.py 'https://discord.com/api/webhooks/...'
-   ```
-
-### Format powiadomień
-
-| Status    | Kolor  | Emoji |
-|-----------|--------|-------|
-| Success   | 🟢     | ✅    |
-| Failure   | 🔴     | ❌    |
-| Cancelled | 🟡     | ⚠️    |
-
-Powiadomienie zawiera: nazwę repozytorium, branch, commit (skrócony),
-autora, link do runa, datę i podsumowanie z `results/test_results.log`.
 
 ### Użycie skryptu lokalnie
 
@@ -263,8 +269,3 @@ autora, link do runa, datę i podsumowanie z `results/test_results.log`.
 DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..." \
   ./scripts/notify-discord.sh success "Testy lokalne" "Wszystkie testy przeszły"
 ```
-
-### CI - GitHub Actions
-
-W pipeline CI (`test.yml`) raport HTML jest automatycznie generowany i
-dolaczany do artifactu `test-results`.
