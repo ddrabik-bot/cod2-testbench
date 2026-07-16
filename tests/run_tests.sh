@@ -60,6 +60,78 @@ else
     FAILED=$((FAILED + 1))
 fi
 
+# --- Test: GSC test framework exists ---
+if [ -f "$SCRIPT_DIR/../mods/_test.gsc" ]; then
+    echo "[PASS] mods/_test.gsc exists" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] mods/_test.gsc missing" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC test cfg exists ---
+if [ -f "$SCRIPT_DIR/../mods/test.cfg" ]; then
+    echo "[PASS] mods/test.cfg exists" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] mods/test.cfg missing" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC framework has testRunner() ---
+if grep -q "testRunner()" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc contains testRunner()" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing testRunner()" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC framework has assertEQ() ---
+if grep -q "assertEQ(" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc contains assertEQ()" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing assertEQ()" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC framework writes test results ---
+if grep -q "writeFile" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc uses writeFile() for results" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing writeFile()" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has math tests ---
+if grep -q "1 + 1" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has basic math tests" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing math tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has string concatenation tests ---
+if grep -q "strConcat\|Hello.*World\|level\.str" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has string concatenation tests" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing string concatenation tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has level.players tests ---
+if grep -q "level\.players" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has level.players tests" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing level.players tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
 echo "" >> "$RESULTS_FILE"
 echo "==================================================" >> "$RESULTS_FILE"
 echo "Summary: $PASSED passed, $FAILED failed, $SKIPPED skipped" >> "$RESULTS_FILE"

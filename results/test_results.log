@@ -1,4 +1,4 @@
-Test Results - 2026-07-16 15:46:26 UTC
+Test Results - 2026-07-16 15:49:01 UTC
 ==================================================
 
 [PASS] Project README.md exists
@@ -6,6 +6,14 @@ Test Results - 2026-07-16 15:46:26 UTC
 [SKIP] docker-compose.yml - not yet created
 [SKIP] Makefile - not yet created
 [PASS] Git repository initialized
+[PASS] mods/_test.gsc exists
+[PASS] mods/test.cfg exists
+[PASS] _test.gsc contains testRunner()
+[PASS] _test.gsc contains assertEQ()
+[PASS] _test.gsc uses writeFile() for results
+[PASS] _test.gsc has basic math tests
+[PASS] _test.gsc has string concatenation tests
+[PASS] _test.gsc has level.players tests
 
 ==================================================
-Summary: 2 passed, 0 failed, 3 skipped
+Summary: 10 passed, 0 failed, 3 skipped
