@@ -124,11 +124,92 @@ else
 fi
 
 # --- Test: GSC has level.players tests ---
-if grep -q "level\.players" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+if grep -q "level\\.players" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
     echo "[PASS] _test.gsc has level.players tests" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
 else
     echo "[FAIL] _test.gsc missing level.players tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has getCallStack() tests ---
+if grep -q "getCallStack()" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has getCallStack() tests" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing getCallStack() tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has nested call stack tests ---
+if grep -q "testNestedCallStack" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has nested call stack tests" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing nested call stack tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has deep nested call stack tests ---
+if grep -q "testDeepNestedCallStack\\|testNestedCallStackDeep" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has deep nested call stack tests" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing deep nested call stack tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has isDefined() on different types tests ---
+if grep -q "isDefined.*int.*1\\|isDefined.*string.*1\\|isDefined.*array.*1" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has isDefined() type tests" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing isDefined() type tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has isDefined(undefined) test ---
+if grep -q "isDefined.*undefined.*0\\|isDefined.*nonexistent" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has isDefined(undefined) test" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing isDefined(undefined) test" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has logPrintConsole test ---
+if grep -q "logPrintConsole.*test" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has logPrintConsole test" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing logPrintConsole test" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has printf/println/iprintln tests ---
+if grep -q "printf\|println\|iprintln" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has printf/println/iprintln tests" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing printf/println/iprintln tests" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has CodeCallback_NotifyDebug test ---
+if grep -q "CodeCallback_NotifyDebug" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has CodeCallback_NotifyDebug test" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing CodeCallback_NotifyDebug test" >> "$RESULTS_FILE"
+    FAILED=$((FAILED + 1))
+fi
+
+# --- Test: GSC has testRunnerVerbose() function ---
+if grep -q "testRunnerVerbose" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
+    echo "[PASS] _test.gsc has testRunnerVerbose() function" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "[FAIL] _test.gsc missing testRunnerVerbose() function" >> "$RESULTS_FILE"
     FAILED=$((FAILED + 1))
 fi
 
