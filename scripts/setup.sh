@@ -32,6 +32,19 @@ if [ -d "$EXTRACT_DIR/main" ]; then
   ls -la "$TARGET_DIR/main/"
 fi
 
+# Tworzymy minimalny default_localize_mp.cfg - serwer wymaga go do inicjalizacji
+# Bez tego pliku serwer rzuca Sys_Error: "Couldn't load default_localize_mp.cfg"
+echo "=== Tworzenie default_localize_mp.cfg ==="
+cat > "$TARGET_DIR/main/default_localize_mp.cfg" << 'LOCALIZE_EOF'
+// Minimalna default_localize_mp.cfg dla serwera CoD2 w CI
+"" ""
+"MPUI_TITLE" "COD2 MP TEST"
+"MPUI_VERSION" "1.3"
+"PARSE_ERROR" "error"
+"UNKNOWNCOMMAND" "unknown cmd"
+LOCALIZE_EOF
+echo "Plik utworzony: $TARGET_DIR/main/default_localize_mp.cfg"
+
 echo "=== Pobieranie libcod2.so (zk_libcod v15.0) ==="
 curl -sL -o "$TARGET_DIR/libcod2.so" \
   "https://github.com/ibuddieat/zk_libcod/releases/download/v15.0/libcod2.so"
