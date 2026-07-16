@@ -1,0 +1,9 @@
+# Ignoruj wszystkie tymczasowe pliki z workspace
+*.json
+check_*.py
+show_contents.py
+*.tar
+*.tar.bz2
+*.tar.gz
+/tmp/
+/tmp/*
