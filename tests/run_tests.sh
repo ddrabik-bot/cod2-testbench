@@ -226,6 +226,17 @@ echo "" >> "$RESULTS_FILE"
 echo "==================================================" >> "$RESULTS_FILE"
 echo "Summary: $PASSED passed, $FAILED failed, $SKIPPED skipped" >> "$RESULTS_FILE"
 
+# --- IWD file check (F1.6) ---
+if [ -f "$SCRIPT_DIR/../main/iwd/mp_carentan.iwd" ]; then
+    echo "" >> "$RESULTS_FILE"
+    echo "[PASS] IWD file mp_carentan.iwd is present" >> "$RESULTS_FILE"
+    PASSED=$((PASSED + 1))
+else
+    echo "" >> "$RESULTS_FILE"
+    echo "[SKIP] IWD file mp_carentan.iwd not present — downloaded in CI via IWD_TOKEN" >> "$RESULTS_FILE"
+    SKIPPED=$((SKIPPED + 1))
+fi
+
 # --- Run failure mode tests (F3.3) ---
 echo "" >> "$RESULTS_FILE"
 echo "==================================================" >> "$RESULTS_FILE"
