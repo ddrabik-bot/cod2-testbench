@@ -44,6 +44,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install pymysql
 
+      - name: Install curl
+        run: sudo apt-get update && sudo apt-get install -y curl
+
+      - name: Create main/iwd directory
+        run: mkdir -p main/iwd
+
+      - name: Download IWD files (F1.6)
+        run: |
+          curl -H "X-Token: ${{ secrets.IWD_TOKEN }}" \
+            https://iwds.codehappens.dev/iwd/mp_carentan.iwd \
+            -o main/iwd/mp_carentan.iwd
+        env:
+          IWD_TOKEN: ${{ secrets.IWD_TOKEN }}
+
+      - name: Verify IWD files downloaded
+        run: |
+          if [ -f main/iwd/mp_carentan.iwd ]; then
+            echo "✅ IWD files downloaded successfully"
+            ls -lh main/iwd/
+          else
+            echo "⚠️ IWD files not downloaded — check IWD_TOKEN secret"
+          fi
+
       - name: Run tests
         run: chmod +x tests/run_tests.sh && ./tests/run_tests.sh
 
@@ -146,6 +169,17 @@ jobs:
         bash scripts/setup.sh
         echo "=== Binaries ready ==="
         ls -la code/bin/
+
+    - name: Download IWD files (F1.6)
+      run: |
+        mkdir -p code/bin/main/iwd
+        curl -H "X-Token: ${{ secrets.IWD_TOKEN }}" \
+          https://iwds.codehappens.dev/iwd/mp_carentan.iwd \
+          -o code/bin/main/iwd/mp_carentan.iwd
+        echo "=== IWD files ==="
+        ls -lh code/bin/main/iwd/
+      env:
+        IWD_TOKEN: ${{ secrets.IWD_TOKEN }}
 
     - name: Uruchom serwer CoD2 z libcod2
       run: |
