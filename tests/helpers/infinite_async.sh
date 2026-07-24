@@ -1,6 +1,6 @@
 #!/bin/bash
-# infinite_async.sh — skrypt symulujacy execute_async bez timeoutu
-# Zapetla sie w nieskonczonosc — test timeout detection
+# infinite_async.sh — script simulating execute_async without a timeout
+# It loops indefinitely to test timeout detection.
 set -euo pipefail
 
 echo "Starting infinite_async at $(date -u '+%H:%M:%S')"

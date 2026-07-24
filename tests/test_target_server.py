@@ -48,8 +48,8 @@ print("=" * 60)
 print("\n[TEST 1] execute_async_create — basic curl GET")
 test("GET /api/hello", "GET", "/api/hello", expected_key="status", expected_value="ok")
 
-# 2. Curl POST z JSON
-print("\n[TEST 2] execute_async_create — curl POST z JSON body")
+# 2. Curl POST with JSON
+print("\n[TEST 2] execute_async_create — curl POST with a JSON body")
 test("POST /api/echo", "POST", "/api/echo", body={"source": "cod2", "action": "test"}, expected_key="source", expected_value="cod2")
 
 # 3. Fire-and-forget (nosave)
@@ -61,15 +61,15 @@ print("\n[TEST 4] Callback verification — output + param")
 test("GET /api/hello with param check", "GET", "/api/hello", expected_key="source", expected_value="target-server")
 
 # 5. Timeout test
-print("\n[TEST 5] Timeout — curl --max-time 2s na endpoint z 5s opoznieniem")
+print("\n[TEST 5] Timeout — curl --max-time 2s against endpoint delayed by 5s")
 test("GET /api/delay/5 with timeout=2s", "GET", "/api/delay/5", timeout=2)
 
 # 6. Error handling — 404
-print("\n[TEST 6] Error handling — curl do nieistniejacego endpointu")
+print("\n[TEST 6] Error handling — curl to a nonexistent endpoint")
 test("GET /api/nonexistent (404)", "GET", "/api/nonexistent", expected_status=404)
 
 # 7. Error handling — 500
-print("\n[TEST 7] Error handling — curl do endpointu zwracajacego 500")
+print("\n[TEST 7] Error handling — curl to an endpoint returning 500")
 test("GET /api/status/500", "GET", "/api/status/500", expected_status=500, expected_key="status", expected_value=500)
 
 # Summary

@@ -1,17 +1,17 @@
 // ============================================================================
-// _test.gsc — Test framework dla CoD2
+// _test.gsc — Test framework for CoD2
 // ============================================================================
-// Zapewnia:
-//   - testRunner()   — uruchamia wszystkie testy i generuje raport
-//   - assertEQ()     — sprawdza czy actual == expected
-//   - generateHtmlReport() — generuje HTML raport z wyników
+// Provides:
+//   - testRunner()   — runs all tests and generates a report
+//   - assertEQ()     — checks whether actual == expected
+//   - generateHtmlReport() — generates an HTML test-results report
 //
-// Uruchomienie: exec test.cfg w konsoli serwera
-// Raport:        logPrintConsole + results/test_results.log + results/test_report.html
+// Run with: exec test.cfg in the server console
+// Report:   logPrintConsole + results/test_results.log + results/test_report.html
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// testRunner() — glowna funkcja uruchamiajaca testy
+// testRunner() — main test-running function
 // ---------------------------------------------------------------------------
 testRunner()
 {
@@ -21,7 +21,7 @@ testRunner()
     level.testDetails = "";
 
     logPrintConsole("^2========================================^7\n");
-    logPrintConsole("^2  Test Runner v1.1 — uruchomiono       ^7\n");
+    logPrintConsole("^2  Test Runner v1.1 — started       ^7\n");
     logPrintConsole("^2========================================^7\n");
 
     // ---- Test 1: Basic math ----
@@ -37,22 +37,22 @@ testRunner()
     level.strA = "Hello";
     level.strB = "World";
     level.strResult = level.strA + " " + level.strB;
-    assertEQ(level.strResult, "Hello World", "Konkatencja: 'Hello' + ' ' + 'World'");
+    assertEQ(level.strResult, "Hello World", "Concatenation: 'Hello' + ' ' + 'World'");
 
     level.strMulti = "Test" + "_" + "frame" + "_" + "v1";
-    assertEQ(level.strMulti, "Test_frame_v1", "Konkatencja wielokrotna: Test_frame_v1");
+    assertEQ(level.strMulti, "Test_frame_v1", "Concatenation multiple: Test_frame_v1");
 
     level.strEmpty = "" + "nonempty";
-    assertEQ(level.strEmpty, "nonempty", "Konkatencja z pustym stringiem");
+    assertEQ(level.strEmpty, "nonempty", "Concatenation with an empty string");
 
     // ---- Test 3: level.players ----
     logPrintConsole("^3--- Test 3: level.players ---^7\n");
-    assertEQ(isDefined(level.players), 1, "level.players jest zdefiniowane");
+    assertEQ(isDefined(level.players), 1, "level.players is defined");
 
     level.playerCount = level.players.size;
     assertEQ(level.playerCount >= 0, 1, "level.players.size >= 0");
 
-    logPrintConsole("^4Aktualna liczba graczy: " + level.playerCount + "^7\n");
+    logPrintConsole("^4Current player count: " + level.playerCount + "^7\n");
 
     // ---- F3.3: Failure Mode Tests ----
     logPrintConsole("^3--- F3.3: Failure Mode Tests ---^7\n");
@@ -65,15 +65,15 @@ testRunner()
     // Test: division by zero
     logPrintConsole("^3--- Test 5: Division by zero ---^7\n");
     level.divResult = 10 / 0;
-    assertEQ(isDefined(level.divResult), 1, "Division by zero nie crashuje (GSC safe)");
+    assertEQ(isDefined(level.divResult), 1, "Division by zero does not crash (GSC safe)");
 
     // Test: empty string operations
     logPrintConsole("^3--- Test 6: Empty string operations ---^7\n");
     level.emptyStr = "";
     level.emptyConcat = level.emptyStr + level.emptyStr;
-    assertEQ(level.emptyConcat, "", "Pusty string + pusty string == pusty string");
-    assertEQ(level.emptyStr, "", "Pusty string == \"\"");
-    assertEQ(strlen(level.emptyStr), 0, "strlen(pusty string) == 0");
+    assertEQ(level.emptyConcat, "", "Empty string + empty string == empty string");
+    assertEQ(level.emptyStr, "", "Empty string == \"\"");
+    assertEQ(strlen(level.emptyStr), 0, "strlen(empty string) == 0");
 
     // Test: out of bounds array access
     logPrintConsole("^3--- Test 7: Array boundary test ---^7\n");
@@ -86,31 +86,31 @@ testRunner()
     // Test: invalid data handling
     logPrintConsole("^3--- Test 8: Invalid data handling ---^7\n");
     level.invalidNum = "abc" + 123;
-    assertEQ(isDefined(level.invalidNum), 1, "String + number nie crashuje");
+    assertEQ(isDefined(level.invalidNum), 1, "String + number does not crash");
     level.mixedType = 1 + "test";
-    assertEQ(isDefined(level.mixedType), 1, "Number + string nie crashuje");
+    assertEQ(isDefined(level.mixedType), 1, "Number + string does not crash");
 
-    // Test: cykliczna zależność zmiennych
+    // Test: circular variable reference
     logPrintConsole("^3--- Test 9: Self-reference ---^7\n");
     level.selfRef = level.selfRef;
-    assertEQ(isDefined(level.selfRef), 0, "Self-referencja undefined (jeszcze nie zdefiniowana)");
+    assertEQ(isDefined(level.selfRef), 0, "Self-reference undefined (not defined yet)");
 
-    // ---- Koniec F3.3 ----
+    // ---- End of F3.3 ----
 
-    // Sprawdzenie czy kazdy element tablicy to entity
+    // Check that every array element is an entity
     if (level.playerCount > 0)
     {
         level.i = 0;
         while (level.i < level.playerCount)
         {
             level.player = level.players[level.i];
-            assertEQ(isDefined(level.player), 1, "Gracz " + level.i + " jest zdefiniowany");
+            assertEQ(isDefined(level.player), 1, "Player " + level.i + " is defined");
             level.i++;
         }
     }
     else
     {
-        logPrintConsole("^3Brak graczy na serwerze — pomijam test entity per player^7\n");
+        logPrintConsole("^3No players on the server — skipping the entity-per-player test^7\n");
     }
 
     // ---- Test 4: getCallStack() - debug function from zk_libcod ----
@@ -118,51 +118,51 @@ testRunner()
 
     // Test 4.1: getCallStack() exists and returns data
     level.stack = getCallStack();
-    assertEQ(isDefined(level.stack), 1, "getCallStack() zwraca zdefiniowana wartosc");
+    assertEQ(isDefined(level.stack), 1, "getCallStack() returns a defined value");
 
     // Test 4.2: getCallStack() returns an array (has .size property)
     level.stackSize = level.stack.size;
-    assertEQ(level.stackSize >= 2, 1, "getCallStack() zwraca tablice z co najmniej 2 elementami (filename + line)");
+    assertEQ(level.stackSize >= 2, 1, "getCallStack() returns an array with at least 2 elements (filename + line)");
 
     // Test 4.3: First element is a filename
     level.firstElem = level.stack[0];
-    assertEQ(isDefined(level.firstElem), 1, "getCallStack()[0] jest zdefiniowane (nazwa pliku)");
+    assertEQ(isDefined(level.firstElem), 1, "getCallStack()[0] is defined (filename)");
 
     // Test 4.4: Second element is a line number
     level.secondElem = level.stack[1];
-    assertEQ(isDefined(level.secondElem), 1, "getCallStack()[1] jest zdefiniowane (numer linii)");
+    assertEQ(isDefined(level.secondElem), 1, "getCallStack()[1] is defined (line number)");
 
     // Test 4.5: getCallStack() called from nested function has deeper stack
     level.nestedStack = [];
     testNestedCallStack();
     level.nestedDepth = level.nestedStack.size;
-    assertEQ(level.nestedDepth >= 4, 1, "getCallStack() z funkcji zagniezdzonej ma >= 4 elementy (2 ramki)");
+    assertEQ(level.nestedDepth >= 4, 1, "getCallStack() from a nested function has >= 4 elementy (2 ramki)");
 
     // Test 4.6: Stack grows with deeper nesting
     level.deepStack = [];
     testDeepNestedCallStack();
     level.deepDepth = level.deepStack.size;
-    assertEQ(level.deepDepth >= level.nestedDepth, 1, "getCallStack() z glebszego zagniezdzenia ma wiecej ramek");
+    assertEQ(level.deepDepth >= level.nestedDepth, 1, "getCallStack() from deeper nesting has more frames");
 
-    // ---- Test 5: isDefined() na roznych typach ----
+    // ---- Test 5: isDefined() on different types ----
     logPrintConsole("^3--- Test 5: isDefined() on different types ---^7\n");
 
     // Test 5.1: isDefined() on int
     level.testInt = 42;
     assertEQ(isDefined(level.testInt), 1, "isDefined(int) == 1");
-    assertEQ(isDefined(0), 1, "isDefined(0) == 1 (zero jest zdefiniowane)");
+    assertEQ(isDefined(0), 1, "isDefined(0) == 1 (zero is defined)");
 
     // Test 5.2: isDefined() on string
     level.testStr = "hello";
     assertEQ(isDefined(level.testStr), 1, "isDefined(string) == 1");
-    assertEQ(isDefined(""), 1, "isDefined('') == 1 (pusty string jest zdefiniowany)");
+    assertEQ(isDefined(""), 1, "isDefined('') == 1 (empty string is defined)");
 
     // Test 5.3: isDefined() on array
     level.testArr = [];
     assertEQ(isDefined(level.testArr), 1, "isDefined(array) == 1");
 
     // Test 5.4: isDefined() on undefined
-    assertEQ(isDefined(level.undefinedVar), 0, "isDefined(niezdefiniowana zmienna) == 0");
+    assertEQ(isDefined(level.undefinedVar), 0, "isDefined(undefined variable) == 0");
 
     // Test 5.5: isDefined() on entity
     assertEQ(isDefined(level), 1, "isDefined(entity level) == 1");
@@ -177,56 +177,56 @@ testRunner()
     // Test 5.8: isDefined() on complex nested array
     level.nestedArr = [1, [2, 3], "test"];
     assertEQ(isDefined(level.nestedArr), 1, "isDefined(nested array) == 1");
-    assertEQ(isDefined(level.nestedArr[1]), 1, "isDefined(nestedArr[1]) == 1 (podtablica)");
+    assertEQ(isDefined(level.nestedArr[1]), 1, "isDefined(nestedArr[1]) == 1 (nested array)");
 
     // ---- Test 6: Logging and debug output ----
     logPrintConsole("^3--- Test 6: Logging and debug output ---^7\n");
 
     // Test 6.1: logPrintConsole() - exists and works
-    assertEQ(logPrintConsole("^2[DEBUG] logPrintConsole test^7\n"), 1, "logPrintConsole() zwraca 1 (sukces)");
+    assertEQ(logPrintConsole("^2[DEBUG] logPrintConsole test^7\n"), 1, "logPrintConsole() returns 1 (success)");
 
     // Test 6.2: printf() - exists and works
-    assertEQ(isDefined(printf), 1, "printf() jest zdefiniowana");
+    assertEQ(isDefined(printf), 1, "printf() is defined");
     level.printfResult = 0;
     printf("^2[DEBUG] printf test^7\n");
     level.printfResult = 1;
-    assertEQ(level.printfResult, 1, "printf() wykonuje sie bez bledu");
+    assertEQ(level.printfResult, 1, "printf() executes without an error");
 
     // Test 6.3: println() - exists and works
-    assertEQ(isDefined(println), 1, "println() jest zdefiniowana");
+    assertEQ(isDefined(println), 1, "println() is defined");
     level.printlnResult = 0;
     println("^2[DEBUG] println test^7\n");
     level.printlnResult = 1;
-    assertEQ(level.printlnResult, 1, "println() wykonuje sie bez bledu");
+    assertEQ(level.printlnResult, 1, "println() executes without an error");
 
     // Test 6.4: iprintln() - exists and works
-    assertEQ(isDefined(iprintln), 1, "iprintln() jest zdefiniowana");
+    assertEQ(isDefined(iprintln), 1, "iprintln() is defined");
     level.iprintlnResult = 0;
     iprintln("^2[DEBUG] iprintln test^7");
     level.iprintlnResult = 1;
-    assertEQ(level.iprintlnResult, 1, "iprintln() wykonuje sie bez bledu");
+    assertEQ(level.iprintlnResult, 1, "iprintln() executes without an error");
 
     // Test 6.5: iprintlnbold() - exists and works
-    assertEQ(isDefined(iprintlnbold), 1, "iprintlnbold() jest zdefiniowana");
+    assertEQ(isDefined(iprintlnbold), 1, "iprintlnbold() is defined");
     level.iprintlnboldResult = 0;
     iprintlnbold("^2[DEBUG] iprintlnbold test^7");
     level.iprintlnboldResult = 1;
-    assertEQ(level.iprintlnboldResult, 1, "iprintlnbold() wykonuje sie bez bledu");
+    assertEQ(level.iprintlnboldResult, 1, "iprintlnbold() executes without an error");
 
     // Test 6.6: print() - exists and works
-    assertEQ(isDefined(print), 1, "print() jest zdefiniowana");
+    assertEQ(isDefined(print), 1, "print() is defined");
     level.printResult = 0;
     print("^2[DEBUG] print test^7\n");
     level.printResult = 1;
-    assertEQ(level.printResult, 1, "print() wykonuje sie bez bledu");
+    assertEQ(level.printResult, 1, "print() executes without an error");
 
     // Test 6.7: Debug callbacks - CodeCallback_NotifyDebug exists
-    assertEQ(isDefined(CodeCallback_NotifyDebug), 1, "CodeCallback_NotifyDebug jest zdefiniowany");
+    assertEQ(isDefined(CodeCallback_NotifyDebug), 1, "CodeCallback_NotifyDebug is defined");
 
-    // ---- Podsumowanie ----
+    // ---- Summary ----
     level.totalTests = level.testPassed + level.testFailed;
     logPrintConsole("^2========================================^7\n");
-    logPrintConsole("^2  Podsumowanie testow                  ^7\n");
+    logPrintConsole("^2  Test summary                  ^7\n");
     logPrintConsole("^2========================================^7\n");
     logPrintConsole("^2  Total:  " + level.totalTests + "^7\n");
     logPrintConsole("^2  Passed: " + level.testPassed + "^7\n");
@@ -242,7 +242,7 @@ testRunner()
 
     logPrintConsole("^2========================================^7\n");
 
-    // ---- Zapis do pliku (plain text) ----
+    // ---- Write to a file (plain text) ----
     level.resultText = "=== Test Results ===\n";
     level.resultText = level.resultText + "Total:  " + level.totalTests + "\n";
     level.resultText = level.resultText + "Passed: " + level.testPassed + "\n";
@@ -266,26 +266,26 @@ testRunner()
     }
 
     writeFile("results/test_results.log", level.resultText);
-    logPrintConsole("^4Raport TXT zapisany do results/test_results.log^7\n");
+    logPrintConsole("^4Text report written do results/test_results.log^7\n");
 
-    // ---- Zapis do pliku (HTML) ----
+    // ---- Write to a file (HTML) ----
     generateHtmlReport();
 
-    logPrintConsole("^4Raport HTML zapisany do results/test_report.html^7\n");
+    logPrintConsole("^4HTML report written do results/test_report.html^7\n");
 }
 
 // ---------------------------------------------------------------------------
-// generateHtmlReport() — generuje kolorowy raport HTML z wyników testów
+// generateHtmlReport() — generates a color-coded HTML test-results report
 // ---------------------------------------------------------------------------
 generateHtmlReport()
 {
     level.htmlContent = "";
     level.htmlContent = level.htmlContent + "<!DOCTYPE html>\n";
-    level.htmlContent = level.htmlContent + "<html lang=\"pl\">\n";
+    level.htmlContent = level.htmlContent + "<html lang=\"en\">\n";
     level.htmlContent = level.htmlContent + "<head>\n";
     level.htmlContent = level.htmlContent + "<meta charset=\"UTF-8\">\n";
     level.htmlContent = level.htmlContent + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
-    level.htmlContent = level.htmlContent + "<title>Raport Testow - CoD2 Testbench</title>\n";
+    level.htmlContent = level.htmlContent + "<title>Test Report - CoD2 Testbench</title>\n";
     level.htmlContent = level.htmlContent + "<style>\n";
     level.htmlContent = level.htmlContent + "  body { font-family: 'Segoe UI', Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; margin: 0; padding: 20px; }\n";
     level.htmlContent = level.htmlContent + "  .container { max-width: 800px; margin: 0 auto; background: #16213e; border-radius: 12px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }\n";
@@ -312,17 +312,17 @@ generateHtmlReport()
     level.htmlContent = level.htmlContent + "</head>\n";
     level.htmlContent = level.htmlContent + "<body>\n";
     level.htmlContent = level.htmlContent + "<div class=\"container\">\n";
-    level.htmlContent = level.htmlContent + "  <h1>Raport Testow - CoD2 Testbench</h1>\n";
+    level.htmlContent = level.htmlContent + "  <h1>Test Report - CoD2 Testbench</h1>\n";
 
-    // Data i czas (uptime serwera)
+    // Date and time (server uptime)
     level.htmlContent = level.htmlContent + "  <div class=\"timestamp\">";
-    level.htmlContent = level.htmlContent + "Data: " + getTime() + " ms (uptime serwera)";
+    level.htmlContent = level.htmlContent + "Time: " + getTime() + " ms (server uptime)";
     level.htmlContent = level.htmlContent + "</div>\n";
 
-    // Podsumowanie - karty statystyk
+    // Summary statistic cards
     level.htmlContent = level.htmlContent + "  <div class=\"summary\">\n";
     level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-total\">";
-    level.htmlContent = level.htmlContent + "      Razem<span class=\"card-count\">" + level.totalTests + "</span>";
+    level.htmlContent = level.htmlContent + "      Total<span class=\"card-count\">" + level.totalTests + "</span>";
     level.htmlContent = level.htmlContent + "    </div>\n";
     level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-pass\">";
     level.htmlContent = level.htmlContent + "      PASSED<span class=\"card-count\">" + level.testPassed + "</span>";
@@ -334,20 +334,20 @@ generateHtmlReport()
     if (level.testFailed > 0)
     {
         level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-result fail\">";
-        level.htmlContent = level.htmlContent + "      WYNIK<span class=\"card-count\">FAIL</span>";
+        level.htmlContent = level.htmlContent + "      RESULT<span class=\"card-count\">FAIL</span>";
         level.htmlContent = level.htmlContent + "    </div>\n";
     }
     else
     {
         level.htmlContent = level.htmlContent + "    <div class=\"summary-card card-result pass\">";
-        level.htmlContent = level.htmlContent + "      WYNIK<span class=\"card-count\">PASS</span>";
+        level.htmlContent = level.htmlContent + "      RESULT<span class=\"card-count\">PASS</span>";
         level.htmlContent = level.htmlContent + "    </div>\n";
     }
 
     level.htmlContent = level.htmlContent + "  </div>\n";
 
-    // Tabela szczegolow
-    level.htmlContent = level.htmlContent + "  <h2>Szczegoly testow</h2>\n";
+    // Details table
+    level.htmlContent = level.htmlContent + "  <h2>Test details</h2>\n";
     level.htmlContent = level.htmlContent + "  <table>\n";
     level.htmlContent = level.htmlContent + "    <thead>\n";
     level.htmlContent = level.htmlContent + "      <tr><th>Status</th><th>Test</th></tr>\n";
@@ -358,7 +358,7 @@ generateHtmlReport()
     level.htmlContent = level.htmlContent + "  </table>\n";
 
     level.htmlContent = level.htmlContent + "  <div class=\"footer\">";
-    level.htmlContent = level.htmlContent + "    Wygenerowano przez CoD2 Testbench - _test.gsc v1.1";
+    level.htmlContent = level.htmlContent + "    Generated by CoD2 Testbench - _test.gsc v1.1";
     level.htmlContent = level.htmlContent + "  </div>\n";
     level.htmlContent = level.htmlContent + "</div>\n";
     level.htmlContent = level.htmlContent + "</body>\n";
@@ -368,7 +368,7 @@ generateHtmlReport()
 }
 
 // ---------------------------------------------------------------------------
-// assertEQ(actual, expected, testName) — sprawdza czy actual == expected
+// assertEQ(actual, expected, testName) — checks whether actual == expected
 // ---------------------------------------------------------------------------
 assertEQ(actual, expected, testName)
 {
@@ -398,13 +398,13 @@ assertEQ(actual, expected, testName)
 // Helper functions for getCallStack() tests
 // ---------------------------------------------------------------------------
 
-// testNestedCallStack() — wywoluje getCallStack() z poziomu zagniezdzonego
+// testNestedCallStack() — calls getCallStack() from a nested scope
 testNestedCallStack()
 {
     level.nestedStack = getCallStack();
 }
 
-// testDeepNestedCallStack() — wywoluje getCallStack() z glebszego poziomu
+// testDeepNestedCallStack() — calls getCallStack() from a deeper scope
 testDeepNestedCallStack()
 {
     testNestedCallStackDeep();
@@ -416,14 +416,14 @@ testNestedCallStackDeep()
 }
 
 // ---------------------------------------------------------------------------
-// testRunnerVerbose() — uruchamia testRunner() z dodatkowym debug outputem
+// testRunnerVerbose() — uruchamia testRunner() with additional debug output
 // ---------------------------------------------------------------------------
 testRunnerVerbose()
 {
-    logPrintConsole("^5--- Uruchamianie testRunner() z debug outputem ---^7\n");
-    logPrintConsole("^5Stack przed testami:^7\n");
+    logPrintConsole("^5--- Starting testRunner() with debug output ---^7\n");
+    logPrintConsole("^5Stack before tests:^7\n");
     level.prestack = getCallStack();
-    logPrintConsole("^5  Rozmiar stosu: " + level.prestack.size + "^7\n");
+    logPrintConsole("^5  Stack size: " + level.prestack.size + "^7\n");
     testRunner();
-    logPrintConsole("^5--- testRunner() zakonczony ---^7\n");
+    logPrintConsole("^5--- testRunner() completed ---^7\n");
 }

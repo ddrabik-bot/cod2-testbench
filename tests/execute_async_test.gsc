@@ -1,21 +1,21 @@
 /**
  * execute_async_test.gsc — Test execute_async_create with curl
  *
- * CEL: Test asynchronicznego wykonywania komend shell przez
+ * PURPOSE: Test asynchronous shell-command execution through
  * execute_async_create / execute_async_create_nosave z zk_libcod.
  *
- * WYMAGANIA:
+ * REQUIREMENTS:
  * - zk_libcod z ENABLE_UNSAFE=1 (config.hpp)
- * - execute_async_checkdone() wywolywane co klatke
- * - target-server uruchomiony (docker compose up -d)
+ * - execute_async_checkdone() called every frame
+ * - target-server running (docker compose up -d)
  *
- * SCENARIUSZE:
+ * SCENARIOS:
  *   1. execute_async_create — basic curl GET
- *   2. execute_async_create — curl POST z JSON body
+ *   2. execute_async_create — curl POST with a JSON body
  *   3. execute_async_create_nosave — fire-and-forget
- *   4. Callback verification — output i param w callbacku
- *   5. Timeout — curl --max-time na opozniony endpoint
- *   6. Error handling — curl do nieistniejacego hosta
+ *   4. Callback verification — output and callback parameter
+ *   5. Timeout — curl --max-time against a delayed endpoint
+ *   6. Error handling — curl to a nonexistent host
  */
 
 test_results = [];
@@ -38,7 +38,7 @@ async_callback_basic(output, param) {
 
 /* ── 2. Curl POST z JSON ── */
 test_post_json() {
-    iprintln("^2[TEST 2] execute_async_create -- curl POST z JSON body");
+    iprintln("^2[TEST 2] execute_async_create -- curl POST with a JSON body");
     execute_async_create(
         "curl -s -X POST -H 'Content-Type: application/json' \
             -d '{\"source\":\"cod2\",\"action\":\"test\"}' \
@@ -69,7 +69,7 @@ test_fire_and_forget() {
 
 /* ── 4. Callback verification ── */
 test_callback_verification() {
-    iprintln("^2[TEST 4] Callback verification -- param i output");
+    iprintln("^2[TEST 4] Callback verification -- parameter and output");
     execute_async_create("echo 'callback_test_ok'", ::async_callback_verify, 42);
 }
 
@@ -85,7 +85,7 @@ async_callback_verify(output, param) {
 
 /* ── 5. Timeout test ── */
 test_timeout() {
-    iprintln("^2[TEST 5] Timeout -- curl --max-time 2s na endpoint z 5s opoznieniem");
+    iprintln("^2[TEST 5] Timeout -- curl --max-time 2s against endpoint delayed by 5s");
     execute_async_create(
         "curl -s --max-time 2 http://target-server:8080/api/delay/5",
         ::async_callback_timeout, 5);
@@ -103,7 +103,7 @@ async_callback_timeout(output, param) {
 
 /* ── 6. Error handling ── */
 test_error_handling() {
-    iprintln("^2[TEST 6] Error handling -- curl do nieistniejacego hosta");
+    iprintln("^2[TEST 6] Error handling -- curl to a nonexistent host");
     execute_async_create(
         "curl -s --connect-timeout 3 http://nonexistent-host-99999:9999/api/test",
         ::async_callback_error, 6);
@@ -122,7 +122,7 @@ async_callback_error(output, param) {
 /* ── Test runner ── */
 run_all_async_tests() {
     iprintln("^3=== execute_async_create test suite ===");
-    iprintln("^3Wersja: 1.0.0");
+    iprintln("^3Version: 1.0.0");
     test_basic_get();
     test_post_json();
     test_fire_and_forget();

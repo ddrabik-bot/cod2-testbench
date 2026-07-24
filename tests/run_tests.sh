@@ -15,7 +15,7 @@ PASSED=0
 FAILED=0
 SKIPPED=0
 
-# --- Test: Projekt istnieje i ma README ---
+# --- Test: Project exists and has a README ---
 if [ -f "$SCRIPT_DIR/../README.md" ]; then
     echo "[PASS] Project README.md exists" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
@@ -24,7 +24,7 @@ else
     FAILED=$((FAILED + 1))
 fi
 
-# --- Test: Dockerfile istnieje ---
+# --- Test: Dockerfile exists ---
 if [ -f "$SCRIPT_DIR/../Dockerfile" ]; then
     echo "[PASS] Dockerfile exists" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
@@ -33,7 +33,7 @@ else
     SKIPPED=$((SKIPPED + 1))
 fi
 
-# --- Test: docker-compose.yml istnieje ---
+# --- Test: docker-compose.yml exists ---
 if [ -f "$SCRIPT_DIR/../docker-compose.yml" ]; then
     echo "[PASS] docker-compose.yml exists" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
@@ -42,7 +42,7 @@ else
     SKIPPED=$((SKIPPED + 1))
 fi
 
-# --- Test: Makefile istnieje ---
+# --- Test: Makefile exists ---
 if [ -f "$SCRIPT_DIR/../Makefile" ]; then
     echo "[PASS] Makefile exists" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
@@ -212,7 +212,7 @@ if grep -q "testRunnerVerbose" "$SCRIPT_DIR/../mods/_test.gsc" 2>/dev/null; then
 else
     echo "[FAIL] _test.gsc missing testRunnerVerbose() function" >> "$RESULTS_FILE"
 =======
-# --- Test: generate_html_report.sh istnieje ---
+# --- Test: generate_html_report.sh exists ---
 if [ -f "$SCRIPT_DIR/generate_html_report.sh" ]; then
     echo "[PASS] generate_html_report.sh exists" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
@@ -234,7 +234,7 @@ echo "==================================================" >> "$RESULTS_FILE"
 
 "$SCRIPT_DIR/failure_mode_tests.sh" >> "$RESULTS_FILE" 2>&1 || true
 
-# --- Generowanie raportu HTML ---
+# --- Generate HTML report ---
 if [ -f "$SCRIPT_DIR/generate_html_report.sh" ]; then
     bash "$SCRIPT_DIR/generate_html_report.sh" "$RESULTS_FILE"
 fi

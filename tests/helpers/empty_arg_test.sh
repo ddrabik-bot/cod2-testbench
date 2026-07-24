@@ -1,16 +1,16 @@
 #!/bin/bash
-# empty_arg_test.sh — skrypt testowy do testowania obslugi pustych argumentow
-# Powinien zakonczyc sie bledem gdy otrzyma puste argumenty
+# empty_arg_test.sh — test script for empty-argument handling
+# It should fail when it receives empty arguments.
 set -euo pipefail
 
 if [ $# -eq 0 ]; then
-    echo "ERROR: Nie podano argumentow"
+    echo "ERROR: No arguments provided"
     exit 1
 fi
 
 FIRST_ARG="${1:-}"
 if [ -z "$FIRST_ARG" ]; then
-    echo "ERROR: Pierwszy argument jest pusty"
+    echo "ERROR: The first argument is empty"
     exit 2
 fi
 

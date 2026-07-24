@@ -20,39 +20,39 @@ FAILED=0
 SKIPPED=0
 
 # ============================================================================
-# Test 1: Crash przy braku LD_PRELOAD
+# Test 1: Crash when LD_PRELOAD is missing
 # ============================================================================
-echo "[F3.3.1] Test: Crash przy braku LD_PRELOAD" >> "$RESULTS_FILE"
+echo "[F3.3.1] Test: Crash when LD_PRELOAD is missing" >> "$RESULTS_FILE"
 
-# Symulacja: uruchom skrypt/test ktory wymaga LD_PRELOAD
-# W normalnym dzialaniu CoD2 wymaga libcod.so przez LD_PRELOAD
-# Test sprawdza czy proces crashuje/konczy sie z bledem gdy zmienna nie istnieje
+# Simulation: run a script/test that requires LD_PRELOAD
+# In normal operation, CoD2 requires libcod.so through LD_PRELOAD
+# The test checks whether the process crashes/exits with an error when the variable is absent
 if env -u LD_PRELOAD bash -c 'echo "test-ld-preload-missing"' 2>&1; then
-    echo "  [INFO] Proces bez LD_PRELOAD nie crashnal — to OK (shell)" >> "$RESULTS_FILE"
-    # Sprawdzamy czy w ogole mozna symulowac crash przez test
-    # Uzywamy zmiennej srodowiskowej REQUIRE_LD_PRELOAD
-    echo "  [PASS] Test LD_PRELOAD: symulacja braku biblioteki" >> "$RESULTS_FILE"
+    echo "  [INFO] Process without LD_PRELOAD did not crash — that is OK (shell)" >> "$RESULTS_FILE"
+    # Check whether a crash can be simulated through the test at all
+    # Use the REQUIRE_LD_PRELOAD environment variable
+    echo "  [PASS] LD_PRELOAD test: missing-library simulation" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
 else
-    echo "  [FAIL] Proces zakonczyl sie bledem — to OCZEKIWANE" >> "$RESULTS_FILE"
-    # W trybie failure mode testu — oczekujemy ze to sie dzieje
-    echo "  [PASS] Oczekiwany failure mode: crash przy braku LD_PRELOAD" >> "$RESULTS_FILE"
+    echo "  [FAIL] Process exited with an error — this is EXPECTED" >> "$RESULTS_FILE"
+    # In failure-mode testing, this outcome is expected
+    echo "  [PASS] Expected failure mode: crash when LD_PRELOAD is missing" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
 fi
 
-# Sprawdzenie czy jest jakas zmienna REQUIRE_LD_PRELOAD (symulacja)
+# Check whether REQUIRE_LD_PRELOAD is set (simulation)
 if [ -n "${REQUIRE_LD_PRELOAD:-}" ]; then
-    echo "  [FAIL] REQUIRE_LD_PRELOAD ustawione ale LD_PRELOAD brak" >> "$RESULTS_FILE"
+    echo "  [FAIL] REQUIRE_LD_PRELOAD is set but LD_PRELOAD is missing" >> "$RESULTS_FILE"
     FAILED=$((FAILED + 1))
 else
-    echo "  [SKIP] REQUIRE_LD_PRELOAD nie ustawione — brak symulacji" >> "$RESULTS_FILE"
+    echo "  [SKIP] REQUIRE_LD_PRELOAD is not set — skipping simulation" >> "$RESULTS_FILE"
     SKIPPED=$((SKIPPED + 1))
 fi
 
 # ============================================================================
-# Test 2: Puste argumenty
+# Test 2: Empty arguments
 # ============================================================================
-echo "[F3.3.2] Test: Puste argumenty" >> "$RESULTS_FILE"
+echo "[F3.3.2] Test: Empty arguments" >> "$RESULTS_FILE"
 
 # Test pustego argumentu w funkcji shellowej
 test_empty_arg() {
@@ -63,69 +63,69 @@ test_empty_arg() {
     return 0
 }
 
-# Test 2a: Pusty argument do funkcji
+# Test 2a: Empty function argument
 if test_empty_arg ""; then
-    echo "  [FAIL] Funkcja nie wykryla pustego argumentu" >> "$RESULTS_FILE"
+    echo "  [FAIL] Function did not detect an empty argument" >> "$RESULTS_FILE"
     FAILED=$((FAILED + 1))
 else
-    echo "  [PASS] Funkcja poprawnie odrzucila pusty argument" >> "$RESULTS_FILE"
+    echo "  [PASS] Function correctly rejected an empty argument" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
 fi
 
-# Test 2b: Pusty string jako parametr
+# Test 2b: Empty string as a parameter
 if [ "" = "" ]; then
-    echo "  [INFO] Pusty string == pusty string (zawsze true)" >> "$RESULTS_FILE"
+    echo "  [INFO] Empty string == empty string (always true)" >> "$RESULTS_FILE"
 fi
 
-# Test 2c: Brak argumentow w skrypcie
+# Test 2c: No script arguments
 SCRIPT_WITH_NO_ARGS="${SCRIPT_DIR}/../tests/helpers/empty_arg_test.sh"
 if [ -f "$SCRIPT_WITH_NO_ARGS" ]; then
     if bash "$SCRIPT_WITH_NO_ARGS" 2>&1; then
-        echo "  [FAIL] Skrypt z pustymi argumentami zakonczyl sie sukcesem" >> "$RESULTS_FILE"
+        echo "  [FAIL] Script with empty arguments completed successfully" >> "$RESULTS_FILE"
         FAILED=$((FAILED + 1))
     else
-        echo "  [PASS] Skrypt z pustymi argumentami zakonczyl sie bledem (oczekiwane)" >> "$RESULTS_FILE"
+        echo "  [PASS] Script with empty arguments failed (expected)" >> "$RESULTS_FILE"
         PASSED=$((PASSED + 1))
     fi
 else
-    echo "  [SKIP] empty_arg_test.sh nie istnieje" >> "$RESULTS_FILE"
+    echo "  [SKIP] empty_arg_test.sh does not exist" >> "$RESULTS_FILE"
     SKIPPED=$((SKIPPED + 1))
 fi
 
-# Test 2d: Pusty plik konfiguracyjny
+# Test 2d: Empty configuration file
 EMPTY_CFG="${SCRIPT_DIR}/../mods/empty_cfg.cfg"
 if [ -f "$EMPTY_CFG" ]; then
-    echo "  [INFO] empty_cfg.cfg istnieje" >> "$RESULTS_FILE"
+    echo "  [INFO] empty_cfg.cfg exists" >> "$RESULTS_FILE"
     CFG_SIZE=$(wc -c < "$EMPTY_CFG")
     if [ "$CFG_SIZE" -eq 0 ]; then
-        echo "  [PASS] Pusty cfg wykryty (size=0)" >> "$RESULTS_FILE"
+        echo "  [PASS] Empty cfg detected (size=0)" >> "$RESULTS_FILE"
         PASSED=$((PASSED + 1))
     else
-        echo "  [INFO] Plik cfg nie jest pusty (size=$CFG_SIZE)" >> "$RESULTS_FILE"
+        echo "  [INFO] The cfg file is not empty (size=$CFG_SIZE)" >> "$RESULTS_FILE"
     fi
 else
-    echo "  [SKIP] empty_cfg.cfg nie istnieje" >> "$RESULTS_FILE"
+    echo "  [SKIP] empty_cfg.cfg does not exist" >> "$RESULTS_FILE"
     SKIPPED=$((SKIPPED + 1))
 fi
 
 # ============================================================================
-# Test 3: Timeout przy execute_async
+# Test 3: Timeout during execute_async
 # ============================================================================
-echo "[F3.3.3] Test: Timeout przy execute_async" >> "$RESULTS_FILE"
+echo "[F3.3.3] Test: Timeout during execute_async" >> "$RESULTS_FILE"
 
-# Symulacja execute_async timeout: uruchom proces w tle i czekaj z timeoutem
-# Uzywamy timeout command jako symulacji execute_async
+# Simulate execute_async timeout: start a background process and wait with a timeout
+# Use the timeout command to simulate execute_async
 
-# Test 3a: Krotki timeout na szybkim procesie (powinien byc OK)
+# Test 3a: Short timeout on a fast process (should be OK)
 if timeout 5 bash -c 'echo "async-ok"' 2>&1 > /dev/null; then
-    echo "  [PASS] execute_async: szybki proces zakonczyl sie przed timeoutem" >> "$RESULTS_FILE"
+    echo "  [PASS] execute_async: fast process completed before the timeout" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
 else
-    echo "  [FAIL] execute_async: szybki proces przekroczyl timeout" >> "$RESULTS_FILE"
+    echo "  [FAIL] execute_async: fast process exceeded the timeout" >> "$RESULTS_FILE"
     FAILED=$((FAILED + 1))
 fi
 
-# Test 3b: Dlugotrwaly proces z timeoutem (powinien przekroczyc timeout)
+# Test 3b: Long-running process with a timeout (should exceed the timeout)
 ASYNC_SCRIPT="${SCRIPT_DIR}/../tests/helpers/slow_async.sh"
 if [ -f "$ASYNC_SCRIPT" ]; then
     ASYNC_TIMEOUT=3
@@ -134,114 +134,114 @@ if [ -f "$ASYNC_SCRIPT" ]; then
         END_TIME=$(date +%s)
         ELAPSED=$((END_TIME - START_TIME))
         if [ "$ELAPSED" -ge "$ASYNC_TIMEOUT" ]; then
-            echo "  [FAIL] execute_async: proces powinien byc timeout (trwal ${ELAPSED}s)" >> "$RESULTS_FILE"
+            echo "  [FAIL] execute_async: process should time out (trwal ${ELAPSED}s)" >> "$RESULTS_FILE"
             FAILED=$((FAILED + 1))
         else
-            echo "  [PASS] execute_async: timeout nie zostal przekroczony (trwal ${ELAPSED}s)" >> "$RESULTS_FILE"
+            echo "  [PASS] execute_async: timeout was not exceeded (trwal ${ELAPSED}s)" >> "$RESULTS_FILE"
             PASSED=$((PASSED + 1))
         fi
     else
         EXIT_CODE=$?
         if [ "$EXIT_CODE" -eq 124 ]; then
-            echo "  [PASS] execute_async: timeout poprawnie wykryty (exit 124)" >> "$RESULTS_FILE"
+            echo "  [PASS] execute_async: timeout correctly detected (exit 124)" >> "$RESULTS_FILE"
             PASSED=$((PASSED + 1))
         else
-            echo "  [PASS] execute_async: proces zakonczyl sie z kodem $EXIT_CODE (tez OK)" >> "$RESULTS_FILE"
+            echo "  [PASS] execute_async: process exited with code $EXIT_CODE (tez OK)" >> "$RESULTS_FILE"
             PASSED=$((PASSED + 1))
         fi
     fi
 else
-    echo "  [SKIP] slow_async.sh nie istnieje" >> "$RESULTS_FILE"
+    echo "  [SKIP] slow_async.sh does not exist" >> "$RESULTS_FILE"
     SKIPPED=$((SKIPPED + 1))
 fi
 
-# Test 3c: execute_async bez timeoutu (nieskonczony proces)
+# Test 3c: execute_async without a timeout (infinite process)
 UNBOUNDED_SCRIPT="${SCRIPT_DIR}/../tests/helpers/infinite_async.sh"
 if [ -f "$UNBOUNDED_SCRIPT" ]; then
-    echo "  [INFO] Test nieskonczonego execute_async" >> "$RESULTS_FILE"
-    # Uruchamiamy z 2s timeoutem
+    echo "  [INFO] Infinite execute_async test" >> "$RESULTS_FILE"
+    # Run with a 2-second timeout
     if timeout 2 bash "$UNBOUNDED_SCRIPT" 2>&1; then
-        echo "  [FAIL] Nieskonczony execute_async zakonczyl sie (cos nie tak)" >> "$RESULTS_FILE"
+        echo "  [FAIL] Infinite execute_async completed (unexpected)" >> "$RESULTS_FILE"
         FAILED=$((FAILED + 1))
     else
         TIMEOUT_EXIT=$?
         if [ "$TIMEOUT_EXIT" -eq 124 ]; then
-            echo "  [PASS] execute_async: timeout na nieskonczonym procesie dziala" >> "$RESULTS_FILE"
+            echo "  [PASS] execute_async: timeout works on an infinite process" >> "$RESULTS_FILE"
             PASSED=$((PASSED + 1))
         else
-            echo "  [PASS] execute_async: proces przerwany (exit $TIMEOUT_EXIT)" >> "$RESULTS_FILE"
+            echo "  [PASS] execute_async: process interrupted (exit $TIMEOUT_EXIT)" >> "$RESULTS_FILE"
             PASSED=$((PASSED + 1))
         fi
     fi
 else
-    echo "  [SKIP] infinite_async.sh nie istnieje" >> "$RESULTS_FILE"
+    echo "  [SKIP] infinite_async.sh does not exist" >> "$RESULTS_FILE"
     SKIPPED=$((SKIPPED + 1))
 fi
 
 # ============================================================================
-# Test 4: Nieprawidlowe dane w MySQL
+# Test 4: Invalid MySQL data
 # ============================================================================
-echo "[F3.3.4] Test: Nieprawidlowe dane w MySQL" >> "$RESULTS_FILE"
+echo "[F3.3.4] Test: Invalid MySQL data" >> "$RESULTS_FILE"
 
-# Sprawdzamy czy MySQL jest dostepny
+# Check whether MySQL is available
 if command -v mysql &> /dev/null || command -v mariadb &> /dev/null; then
-    echo "  [INFO] Klient MySQL dostepny" >> "$RESULTS_FILE"
+    echo "  [INFO] MySQL client available" >> "$RESULTS_FILE"
     
-    # Test 4a: Proba polaczenia z nieprawidlowym hostem
-    echo "  [INFO] Test 4a: Nieprawidlowy host MySQL" >> "$RESULTS_FILE"
+    # Test 4a: Attempt to connect to an invalid host
+    echo "  [INFO] Test 4a: Invalid MySQL host" >> "$RESULTS_FILE"
     MYSQL_OUTPUT=$(mysql -h "nonexistent-host-xyz" -u "test" -p"test" -e "SELECT 1" 2>&1 || true)
     if echo "$MYSQL_OUTPUT" | grep -qiE "error|could not|cannot|refused|timeout|connect"; then
-        echo "  [PASS] MySQL: nieprawidlowy host odrzucony (oczekiwany blad)" >> "$RESULTS_FILE"
+        echo "  [PASS] MySQL: invalid host rejected (expected error)" >> "$RESULTS_FILE"
         PASSED=$((PASSED + 1))
     else
-        echo "  [FAIL] MySQL: nieprawidlowy host nie zwrocil bledu" >> "$RESULTS_FILE"
+        echo "  [FAIL] MySQL: invalid host did not return an error" >> "$RESULTS_FILE"
         FAILED=$((FAILED + 1))
     fi
     
-    # Test 4b: Nieprawidlowe zapytanie SQL
-    echo "  [INFO] Test 4b: Nieprawidlowe zapytanie SQL" >> "$RESULTS_FILE"
-    # Proba z lokalnym MySQL (jezeli dziala)
+    # Test 4b: Invalid SQL query
+    echo "  [INFO] Test 4b: Invalid SQL query" >> "$RESULTS_FILE"
+    # Attempt with local MySQL (if it is running)
     SQL_OUTPUT=$(mysql -e "SELECT INVALID SQL STATEMENT" 2>&1 || true)
     if echo "$SQL_OUTPUT" | grep -qiE "error|syntax|1064|You have an error"; then
-        echo "  [PASS] MySQL: nieprawidlowe SQL odrzucone (oczekiwany blad 1064)" >> "$RESULTS_FILE"
+        echo "  [PASS] MySQL: invalid SQL rejected (expected error 1064)" >> "$RESULTS_FILE"
         PASSED=$((PASSED + 1))
     else
-        echo "  [SKIP] MySQL: nie mozna zweryfikowac bledu SQL (moze brak polaczenia)" >> "$RESULTS_FILE"
+        echo "  [SKIP] MySQL: cannot verify the SQL error (possibly no connection)" >> "$RESULTS_FILE"
         SKIPPED=$((SKIPPED + 1))
     fi
     
-    # Test 4c: SQL Injection proba
-    echo "  [INFO] Test 4c: SQL Injection proba" >> "$RESULTS_FILE"
+    # Test 4c: SQL injection attempt
+    echo "  [INFO] Test 4c: SQL injection attempt" >> "$RESULTS_FILE"
     INJECT_RESULT=$(mysql -e "SELECT * FROM mysql.user WHERE user = 'admin' OR '1'='1'" 2>&1 || true)
     if echo "$INJECT_RESULT" | grep -qiE "error|denied|access|1045|1044"; then
-        echo "  [PASS] MySQL: SQL injection zablokowany (oczekiwany blad dostepu)" >> "$RESULTS_FILE"
+        echo "  [PASS] MySQL: SQL injection blocked (expected access error)" >> "$RESULTS_FILE"
         PASSED=$((PASSED + 1))
     elif [ -z "$INJECT_RESULT" ] || echo "$INJECT_RESULT" | grep -qi "host"; then
-        echo "  [FAIL] MySQL: SQL injection moze byc mozliwy" >> "$RESULTS_FILE"
+        echo "  [FAIL] MySQL: SQL injection may be possible" >> "$RESULTS_FILE"
         FAILED=$((FAILED + 1))
     else
-        echo "  [SKIP] MySQL: nie mozna zweryfikowac SQL injection" >> "$RESULTS_FILE"
+        echo "  [SKIP] MySQL: cannot verify SQL injection" >> "$RESULTS_FILE"
         SKIPPED=$((SKIPPED + 1))
     fi
     
 else
-    echo "  [SKIP] Brak klienta MySQL — testy 4a, 4b, 4c pominiety" >> "$RESULTS_FILE"
+    echo "  [SKIP] No MySQL client — tests 4a, 4b, and 4c skipped" >> "$RESULTS_FILE"
     SKIPPED=$((SKIPPED + 1))
 
-    # Symulacja bledu MySQL bez klienta
+    # MySQL-error simulation without a client
     echo "  [INFO] Symulacja: mysql command not found" >> "$RESULTS_FILE"
-    echo "  [PASS] MySQL: brak klienta wykryty poprawnie" >> "$RESULTS_FILE"
+    echo "  [PASS] MySQL: missing client detected correctly" >> "$RESULTS_FILE"
     PASSED=$((PASSED + 1))
 fi
 
 # ============================================================================
-# Podsumowanie F3.3
+# F3.3 Summary
 # ============================================================================
 echo "" >> "$RESULTS_FILE"
 echo "==================================================" >> "$RESULTS_FILE"
 echo "F3.3 Failure Mode Summary: $PASSED passed, $FAILED failed, $SKIPPED skipped" >> "$RESULTS_FILE"
 echo "==================================================" >> "$RESULTS_FILE"
 
-# W trybie failure modes — testy oczekuja FAIL,
-# ale w tym momencie tylko raportujemy
+# In failure-mode testing, tests expect FAIL,
+# but currently only report the result
 exit $FAILED
