@@ -2,6 +2,51 @@
 
 Test bench for CoD2 mod development with zk_libcod.
 
+## F1.1 repository layout and zk_libcod source
+
+`zk_libcod` is tracked as a Git submodule at `code/zk_libcod`, pinned by this
+repository to an exact commit for reproducible CI checkouts. Its configured
+upstream is the curated `master` branch of
+[`ddrabik-bot/zk_libcod`](https://github.com/ddrabik-bot/zk_libcod); the fork's
+`dev` branch remains available for intentional synchronization and experiments.
+The submodule keeps the source's license and history separate from this
+testbench and avoids committing third-party source snapshots or build binaries.
+
+Clone the repository including its source dependency:
+
+```bash
+git clone --recurse-submodules https://github.com/ddrabik-bot/cod2-testbench.git
+cd cod2-testbench
+```
+
+For an existing clone, initialize the pinned checkout with:
+
+```bash
+git submodule update --init --recursive
+```
+
+To deliberately update the pinned zk_libcod revision, first review and update
+the `master` branch of `ddrabik-bot/zk_libcod`, then run
+`git submodule update --remote code/zk_libcod`, inspect the resulting gitlink,
+and commit that gitlink in this repository. Do not copy source files or commit
+`libcod2.so`.
+
+The stable repository layout is:
+
+- `code/zk_libcod/` — pinned zk_libcod source submodule;
+- `code/bin/` — generated local build output, ignored except for `.gitkeep`;
+- `cod2server/main/` — CoD2 main-directory configuration supplied by a legal
+  game-server artifact, never game binaries or IWD content;
+- `cod2server/testbench/` — the `fs_game` mod directory for test-specific GSC
+  scripts and configuration;
+- `mods/` — current host-side GSC test fixtures retained for existing tests;
+- `results/` — generated test reports; and
+- `tests/` and `scripts/` — host-side verification and CI helpers.
+
+The proprietary CoD2 dedicated-server executable, game data, IWDs, and any
+credentials are intentionally absent. They must be provided through an
+authorized runtime artifact or CI secret/configuration, never committed here.
+
 ## Target Server
 
 An HTTP test server that provides endpoints for testing `execute_async_create` / `execute_async_create_nosave` curl calls.

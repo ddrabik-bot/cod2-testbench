@@ -1,0 +1,4 @@
+[submodule "code/zk_libcod"]
+	path = code/zk_libcod
+	url = https://github.com/ddrabik-bot/zk_libcod.git
+	branch = master

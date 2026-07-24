@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, dev ]
   pull_request:
-    branches: [ master ]
+    branches: [ dev ]
 
 env:
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Run tests
         run: chmod +x tests/run_tests.sh && ./tests/run_tests.sh
@@ -64,12 +66,10 @@ jobs:
   build-zk-libcod:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout zk_libcod
+      - name: Checkout testbench and pinned zk_libcod
         uses: actions/checkout@v4
         with:
-          repository: ibuddieat/zk_libcod
-          ref: dev
-          path: code
+          submodules: recursive
 
       - name: Install Dependencies (32-bit)
         run: |
@@ -78,14 +78,14 @@ jobs:
           sudo apt-get install -y gcc-multilib g++-multilib libstdc++5:i386
 
       - name: Build libcod2.so (nomysql, nospeex)
-        run: cd code && ./doit.sh nomysql nospeex
+        run: cd code/zk_libcod && ./doit.sh nomysql nospeex
 
       - name: Verify libcod2.so exists
         run: |
-          if [ -f code/bin/libcod2.so ]; then
+          if [ -f code/zk_libcod/bin/libcod2.so ]; then
             echo "✅ libcod2.so built successfully"
-            file code/bin/libcod2.so
-            ls -lh code/bin/libcod2.so
+            file code/zk_libcod/bin/libcod2.so
+            ls -lh code/zk_libcod/bin/libcod2.so
           else
             echo "❌ libcod2.so NOT FOUND"
             exit 1
@@ -95,5 +95,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: libcod2-ubuntu-nomysql-nospeex
-          path: code/bin/libcod2.so
+          path: code/zk_libcod/bin/libcod2.so
           if-no-files-found: error
