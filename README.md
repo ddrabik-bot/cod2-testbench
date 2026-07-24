@@ -1,99 +1,99 @@
 # cod2-testbench
 
-Test bench for CoD2 mod development with zk_libcod.
+A reproducible test bench for Call of Duty 2 mod development with `zk_libcod`.
+It separates repository-owned tests from proprietary CoD2 runtime files and
+includes an HTTP fixture for `execute_async_create` curl tests.
 
-## F1.1 repository layout and zk_libcod source
+## Repository layout and `zk_libcod`
 
-`zk_libcod` is tracked as a Git submodule at `code/zk_libcod`, pinned by this
-repository to an exact commit for reproducible CI checkouts. Its configured
-upstream is the curated `master` branch of
-[`ddrabik-bot/zk_libcod`](https://github.com/ddrabik-bot/zk_libcod); the fork's
-`dev` branch remains available for intentional synchronization and experiments.
-The submodule keeps the source's license and history separate from this
-testbench and avoids committing third-party source snapshots or build binaries.
+`zk_libcod` is a Git submodule at `code/zk_libcod`, pinned to an exact commit so
+local and CI checkouts use the same source revision. Its configured source is
+the curated `master` branch of
+[`ddrabik-bot/zk_libcod`](https://github.com/ddrabik-bot/zk_libcod).
 
-Clone the repository including its source dependency:
+The `branch = master` setting in `.gitmodules` is intentional. `master` is the
+reviewed branch from which this repository may deliberately advance its pinned
+gitlink. The fork's `dev` branch can be used for experiments, but it is not the
+automatic source of test-bench updates. The submodule retains its own history
+and licence; do not copy its source snapshots or build binaries here.
 
 ```bash
 git clone --recurse-submodules https://github.com/ddrabik-bot/cod2-testbench.git
 cd cod2-testbench
-```
 
-For an existing clone, initialize the pinned checkout with:
-
-```bash
+# For an existing clone:
 git submodule update --init --recursive
 ```
 
-To deliberately update the pinned zk_libcod revision, first review and update
-the `master` branch of `ddrabik-bot/zk_libcod`, then run
-`git submodule update --remote code/zk_libcod`, inspect the resulting gitlink,
-and commit that gitlink in this repository. Do not copy source files or commit
+To deliberately update the pinned revision: update and review
+`ddrabik-bot/zk_libcod` on `master`, run
+`git submodule update --remote code/zk_libcod`, inspect and test the changed
+gitlink, then commit that gitlink. Do not copy submodule files or commit
 `libcod2.so`.
 
-The stable repository layout is:
+## CoD2 runtime layout
 
-- `code/zk_libcod/` — pinned zk_libcod source submodule;
-- `code/bin/` — generated local build output, ignored except for `.gitkeep`;
-- `cod2server/main/` — CoD2 main-directory configuration supplied by a legal
-  game-server artifact, never game binaries or IWD content;
-- `cod2server/testbench/` — the `fs_game` mod directory for test-specific GSC
-  scripts and configuration;
-- `mods/` — current host-side GSC test fixtures retained for existing tests;
-- `results/` — generated test reports; and
-- `tests/` and `scripts/` — host-side verification and CI helpers.
+- `code/zk_libcod/` — pinned source submodule.
+- `code/bin/` — ignored local build output, except `.gitkeep`.
+- `cod2server/main/` — base CoD2 `main` configuration from an authorized
+  runtime artifact; no committed binaries or IWDs.
+- `cod2server/testbench/` — `fs_game` directory for test-specific GSC scripts
+  and configuration used with a real CoD2 server.
+- `mods/` — host-side GSC fixtures retained for existing tests.
+- `target-server/` — Python HTTP fixture introduced for F2.3; not a CoD2
+  dedicated server.
+- `tests/` and `scripts/` — host-side verification, reporting, and CI helpers.
+- `results/` — generated test reports.
+- `.github/workflows/` — GitHub Actions workflows.
 
-The proprietary CoD2 dedicated-server executable, game data, IWDs, and any
-credentials are intentionally absent. They must be provided through an
-authorized runtime artifact or CI secret/configuration, never committed here.
+The real CoD2 dedicated server is external to this repository. It uses a
+licensed dedicated-server executable, game data and IWDs, plus this project's
+`main` and `fs_game` configuration. Proprietary executables, game files, IWDs,
+credentials, and restricted runtime assets are intentionally absent. Supply
+them through an authorized local runtime, CI artifact, secret, or configuration
+and never commit them to this repository.
 
-## Target Server
+## Python target-server fixture (F2.3)
 
-An HTTP test server that provides endpoints for testing `execute_async_create` / `execute_async_create_nosave` curl calls.
-
-### Endpoints
+`target-server` is a Python HTTP service for curl commands invoked by
+`execute_async_create` and `execute_async_create_nosave`. It is a network
+fixture only: it does not emulate, start, configure, or replace the real CoD2
+server. Docker Compose places it on the project-specific
+`cod2-testbench-net` bridge network. A CoD2 container reaches it at
+`http://target-server:8080`; the host reaches it at `http://localhost:8091`.
 
 | Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/api/hello` | Returns `{"status":"ok","source":"target-server"}` |
-| POST | `/api/echo` | Echoes JSON body + headers back |
-| GET | `/api/delay/<N>` | Responds after N seconds (for timeout tests) |
-| GET | `/api/status/<N>` | Returns HTTP status N (for error tests) |
-| GET | `/api/headers` | Returns request headers as JSON |
+| --- | --- | --- |
+| GET | `/api/health` | Health check. |
+| GET | `/api/hello` | Returns `{"status":"ok","source":"target-server"}`. |
+| POST | `/api/echo` | Returns the JSON body and request headers. |
+| GET | `/api/delay/<N>` | Responds after `N` seconds for timeout tests. |
+| GET | `/api/status/<N>` | Returns HTTP status `N` for error tests. |
+| GET | `/api/headers` | Returns request headers as JSON. |
 
-### Quick Start
+### Quick start
 
 ```bash
 make build
 make up
 make ps
-
-# Run curl tests
 make test-curl
 make test-timeout
 make test-error
 make test-all
-
-# Run shell-level simulation of execute_async_create
 make test-shell
-
-# View logs
 make logs
-
-# Stop
 make down
 ```
 
-## Ports
+## `execute_async_create` examples
 
-- **8091** — target-server (HTTP test server)
+The following calls run on a real CoD2 server with `zk_libcod`. Use host port
+`8091` from the host and internal port `8080` from containers on the project
+network.
 
-## Tests
+### Basic GET
 
-### 1. execute_async_create — basic curl GET
-
-GSC call:
 ```c
 execute_async_create(
     "curl -s http://target-server:8080/api/hello",
@@ -101,14 +101,12 @@ execute_async_create(
 );
 ```
 
-Shell equivalent:
 ```bash
 curl -s http://localhost:8091/api/hello
 ```
 
-### 2. execute_async_create — curl POST z JSON
+### POST JSON
 
-GSC call:
 ```c
 execute_async_create(
     "curl -s -X POST -H 'Content-Type: application/json' \
@@ -118,7 +116,7 @@ execute_async_create(
 );
 ```
 
-### 3. execute_async_create_nosave — fire-and-forget
+### Fire-and-forget
 
 ```c
 execute_async_create_nosave(
@@ -128,11 +126,8 @@ execute_async_create_nosave(
 );
 ```
 
-No callback — just fires the curl and continues.
-
-### 4. Callback verification
-
-execute_async_create passes `callback(output, param)`:
+This form starts the command and continues without a callback.
+`execute_async_create` instead passes `callback(output, param)`:
 
 ```c
 execute_async_create("echo 'callback_test_ok'", ::my_callback, 42);
@@ -143,9 +138,9 @@ my_callback(output, param) {
 }
 ```
 
-### 5. Timeout test
+### Timeout and error handling
 
-Curl with `--max-time` limits execution time. When the endpoint is slower than the limit, curl exits with code 28:
+When `--max-time` expires, curl exits with code `28`:
 
 ```c
 execute_async_create(
@@ -154,10 +149,6 @@ execute_async_create(
 );
 ```
 
-### 6. Error handling
-
-Curl to a nonexistent host or endpoint returns empty output or error message:
-
 ```c
 execute_async_create(
     "curl -s --connect-timeout 3 http://nonexistent-host-99999:9999/api/test",
@@ -165,152 +156,58 @@ execute_async_create(
 );
 ```
 
-## GSC Test Suite
+## GSC and Python test suites
 
-The file `tests/execute_async_test.gsc` contains 6 test scenarios:
+`tests/execute_async_test.gsc` provides six scenarios: basic GET, JSON POST,
+fire-and-forget, callback verification, timeout handling, and unavailable-host
+handling. To run it with a real server:
 
-1. `test_basic_get()` — basic curl GET
-2. `test_post_json()` — curl POST z JSON
-3. `test_fire_and_forget()` — nosave call
-4. `test_callback_verification()` — callback param weryfikacja
-5. `test_timeout()` — timeout test z --max-time
-6. `test_error_handling()` — error handling dla nieistniejacego hosta
+1. Copy `tests/execute_async_test.gsc` to the server's `raw/` directory.
+2. Call `run_all_async_tests()` from `CodeCallback_StartGameType()`.
+3. Ensure `execute_async_checkdone()` runs once per game frame.
+4. Start the fixture with `make up`, then restart the CoD2 server.
+5. Inspect fixture logs with `make logs` and CoD2 logs separately.
 
-Aby uruchomic testy w CoD2 server:
+Requirements: `zk_libcod` built with `ENABLE_UNSAFE=1` in `config.hpp`, a
+network path from CoD2 to `target-server`, and `execute_async_checkdone()` in
+the game loop. Docker services should share a network; use host networking only
+when explicitly required.
 
-1. Skopiuj `tests/execute_async_test.gsc` do katalogu `raw/` serwera
-2. Dodaj call do `run_all_async_tests()` w `CodeCallback_StartGameType()`
-3. Upewnij sie, ze `execute_async_checkdone()` jest wywolywane co klatke
-4. Uruchom target-server: `make up`
-5. Restart serwera CoD2
-6. Sprawdz logi: `make logs`
-
-### Wymagania
-
-- zk_libcod z `ENABLE_UNSAFE=1` (config.hpp)
-- Siec Docker: target-server w tej samej sieci co serwer CoD2 (lub przez `--network host`)
-- `execute_async_checkdone()` w petli gry
-
-## Python Test Suite
-
-The file `tests/test_target_server.py` contains 7 automated tests that verify the target-server
-endpoints from within the container (simulating what execute_async_create does with curl):
+`tests/test_target_server.py` runs seven fixture endpoint tests inside the
+container, covering GET, JSON POST, fire-and-forget behavior, callback
+simulation, timeout, 404, and 500 responses:
 
 ```bash
-# Run inside target-server container
 docker exec cod2-testbench-target python3 /app/test_target_server.py
 ```
 
-### Test Results (all PASS)
+## HTML reports
 
-```
-============================================================
-execute_async_create — target-server test suite
-============================================================
-
-[TEST 1] execute_async_create — basic curl GET
-  PASS: GET /api/hello (HTTP 200)
-
-[TEST 2] execute_async_create — curl POST z JSON body
-  PASS: POST /api/echo (HTTP 200)
-
-[TEST 3] execute_async_create_nosave — fire-and-forget
-  PASS: POST /api/echo (nosave) (HTTP 200)
-
-[TEST 4] Callback verification — output + param
-  PASS: GET /api/hello with param check (HTTP 200)
-
-[TEST 5] Timeout — curl --max-time 2s na endpoint z 5s opoznieniem
-  PASS: GET /api/delay/5 with timeout=2s — timeout as expected
-
-[TEST 6] Error handling — curl do nieistniejacego endpointu
-  PASS: GET /api/nonexistent (404) (HTTP 404 as expected)
-
-[TEST 7] Error handling — curl do endpointu zwracajacego 500
-  PASS: GET /api/status/500 (HTTP 500 as expected)
-
-============================================================
-RESULTS: 7 passed, 0 failed, 7 total
-============================================================
-```
-
-## Project Structure
-
-```
-cod2-testbench/
-├── docker-compose.yml       # Docker compose z target-server
-├── Makefile                 # Komendy: up, down, test-*, test-shell
-├── README.md                # Ten plik
-├── target-server/
-│   ├── Dockerfile           # Python 3.13-alpine
-│   └── server.py            # HTTP test server
-├── tests/
-│   ├── execute_async_test.gsc   # GSC test suite dla execute_async_create (F2.3)
-│   └── test_target_server.py    # Python test suite (F2.3)
-├── mods/
-│   ├── _test.gsc            # Framework testowy
-│   └── test.cfg             # Konfiguracja testow
-├── results/
-│   ├── test_results.log     # Wyniki testow (plain text)
-│   └── test_results.html    # Raport HTML
-├── scripts/
-│   └── notify-discord.sh   # Powiadomienia Discord
-└── .github/workflows/
-    └── test.yml             # CI pipeline
-```
-
-## Raport HTML (F3.4)
-
-Testy generuja kolorowy raport HTML zamiast tylko plain textu.
-
-### GSC - `_test.gsc`
-
-Po kazdym uruchomieniu `testRunner()` na serwerze CoD2, oprocz pliku
-`results/test_results.log`, generowany jest rowniez `results/test_report.html`:
-
-- Karty podsumowania: Razem, PASSED, FAILED, WYNIK (kolorowane)
-- Tabela szczegolow: kazdy test jako wiersz z badge PASS (zielony) / FAIL (czerwony)
-- Data: uptime serwera w ms
-- Responsywne styled (dark theme, inline CSS)
-
-### Shell - `tests/generate_html_report.sh`
-
-Konwertuje dowolny plik `test_results.log` na `test_results.html`:
+The GSC framework writes `results/test_results.log` and
+`results/test_report.html` after `testRunner()` runs. The HTML report contains
+summary cards, a PASS/FAIL table, server uptime in milliseconds, and responsive
+inline dark-theme styling.
 
 ```bash
-# Generowanie HTML z domyslnego pliku wynikowego
+# Generate from the default result log.
 ./tests/generate_html_report.sh
 
-# Lub z konkretnego pliku log
+# Generate from a specific log.
 ./tests/generate_html_report.sh results/test_results.log
 ```
 
-### CI - GitHub Actions
+GitHub Actions generates the report when the helper exists and uploads
+`results/` as the `test-results` artifact.
 
-W pipeline CI (`test.yml`) raport HTML jest automatycznie generowany i
-dolaczany do artifactu `test-results`.
+## Discord webhook notifications
 
-## Discord Webhook (F3.5)
+After a GitHub Actions test run, the workflow can send a summary to Discord:
 
-Po każdym uruchomieniu GitHub Actions test suite wysyła powiadomienie na
-Discorda z podsumowaniem wyników.
-
-### Konfiguracja
-
-1. Utwórz webhook na serwerze Discord:
-   - Ustawienia kanału → Integracje → Webhooki → Nowy webhook
-   - Skopiuj URL webhooka
-
-2. Dodaj secret do repozytorium:
-   
-   **Przez GitHub UI:**
-   - Settings → Secrets and variables → Actions → New repository secret
-   - Name: `DISCORD_WEBHOOK_URL`
-   - Value: URL webhooka z Discorda
-
-### Użycie skryptu lokalnie
+1. Create a webhook under Discord channel **Integrations** → **Webhooks**.
+2. Add its URL as the Actions secret `DISCORD_WEBHOOK_URL` in **Settings** →
+   **Secrets and variables** → **Actions** → **New repository secret**.
 
 ```bash
 DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..." \
-  ./scripts/notify-discord.sh success "Testy lokalne" "Wszystkie testy przeszły"
+  ./scripts/notify-discord.sh success "Local tests" "All tests passed"
 ```
